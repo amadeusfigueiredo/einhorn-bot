@@ -2,9 +2,8 @@ import { useEffect, useRef } from 'react'
 import type { Player } from '../engine/update'
 import { updateGame } from '../engine/update'
 import { drawScene } from '../engine/draw'
-import type { Keys } from '../types'
+import type { Keys, LoaderImageAssets } from '../types'
 import type { StageConfig } from '../types'
-import type { Assets } from '../utils/loader'
 
 type Params = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>
@@ -12,7 +11,7 @@ type Params = {
   stage: StageConfig
   playerRef: React.MutableRefObject<Player>
   answeredRef: React.MutableRefObject<Set<string>>
-  assetsRef: React.RefObject<Assets | null>
+  assetsRef: React.RefObject<LoaderImageAssets | null>
   questionKey: { kind: 'gate' | 'npc'; id: string } | null
   onTrigger: (kind: 'gate' | 'npc', id: string) => void
   deps?: unknown[] // extra deps to control effect
@@ -59,7 +58,7 @@ export default function useGameLoop({
 
       // draw always
       drawScene(
-        ctx,
+        ctx!,
         stage,
         playerRef.current,
         answeredRef.current,

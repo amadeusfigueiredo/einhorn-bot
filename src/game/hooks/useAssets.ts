@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { loadAssets, type Assets } from '../utils/loader'
+import { loadImageAssets } from '../utils/loader'
+import type { LoaderImageAssets } from '../types'
 
 export default function useAssets() {
-  const assetsRef = useRef<Assets | null>(null)
+  const assetsRef = useRef<LoaderImageAssets | null>(null)
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     let cancelled = false
-    loadAssets()
+    loadImageAssets()
       .then((a) => {
         if (cancelled) return
         assetsRef.current = a
