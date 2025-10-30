@@ -27,7 +27,7 @@ export default function QuestionOverlay({
           boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
         }}
       >
-        <h3 style={{ marginTop: 0 }}>{prompt}</h3>
+        <h3 style={{ marginTop: 0 }}>{prompt.toUpperCase()}</h3>
         <div style={{ display: 'grid', gap: 10, marginTop: 10 }}>
           {choices.map((c, i) => (
             <button
@@ -41,6 +41,7 @@ export default function QuestionOverlay({
                 border: '1px solid #ddd',
                 background: '#f7f7f8',
                 cursor: 'pointer',
+                textTransform: 'uppercase',
                 color: 'black',
               }}
             >
