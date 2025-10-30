@@ -1,289 +1,103 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback, type JSX } from 'react'
 import QuestionOverlay from './QuestionOverlay'
 import { STAGES } from './stages'
-import type { Keys, StageConfig } from './types'
+import useKeys from './hooks/useKeys'
+import useGameLoop from './hooks/useGameLoop'
+import useAudioManager from './hooks/useAudio'
+import { loadImageAssets, loadAudioAssets } from './utils/loader'
+import type { LoaderAudioAssets, LoaderImageAssets } from './types'
 
-const WIDTH = 960,
-  HEIGHT = 540
+const WIDTH = 960
+const HEIGHT = 540
 
-function useKeys() {
-  const keysRef = useRef<Keys>({})
-  useEffect(() => {
-    const down = (e: KeyboardEvent) =>
-      (keysRef.current[e.key.toLowerCase()] = true)
-    const up = (e: KeyboardEvent) =>
-      (keysRef.current[e.key.toLowerCase()] = false)
-    window.addEventListener('keydown', down)
-    window.addEventListener('keyup', up)
-    return () => {
-      window.removeEventListener('keydown', down)
-      window.removeEventListener('keyup', up)
-    }
-  }, [])
-  return keysRef
-}
-
-function clamp(v: number, a: number, b: number) {
-  return Math.max(a, Math.min(b, v))
-}
-function rectsOverlap(
-  a: { x: number; y: number; w: number; h: number },
-  b: { x: number; y: number; w: number; h: number }
-) {
-  return (
-    a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
-  )
-}
-function dist(ax: number, ay: number, bx: number, by: number) {
-  const dx = ax - bx,
-    dy = ay - by
-  return Math.hypot(dx, dy)
-}
-
-export default function GameCanvas() {
+export default function GameCanvas(): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const keysRef = useKeys()
 
   const [stageIndex, setStageIndex] = useState(0)
   const stage = STAGES[stageIndex]
 
-  // Track answered by id (works for both gates and npcs)
-  const answered = useRef<Set<string>>(new Set())
+  const answeredRef = useRef(new Set<string>())
   const [questionKey, setQuestionKey] = useState<{
     kind: 'gate' | 'npc'
     id: string
   } | null>(null)
+  const playerRef = useRef({ x: 60, y: 320, w: 56, h: 56, speed: 210 })
+  const assetsRef = useRef<LoaderImageAssets | null>(null)
+  const audioRef = useRef<LoaderAudioAssets | null>(null)
+  const [assetsLoaded, setAssetsLoaded] = useState(false)
 
-  // Player
-  const player = useRef({ x: 60, y: 320, w: 56, h: 56, speed: 210 })
+  // --- dev control state ---
+  const [jumpInput, setJumpInput] = useState<string>('') // 1-based input
 
-  // Reset on stage change
+  // *** ADDED FIX ***
+  // Clear the set of answered questions whenever the stage changes.
+  // This prevents the count from carrying over between stages.
   useEffect(() => {
-    answered.current = new Set()
-    player.current.x = 40
-    player.current.y = 320
-    setQuestionKey(null)
+    answeredRef.current.clear()
   }, [stageIndex])
 
-  // Main loop
+  // load assets
   useEffect(() => {
-    const canvas = canvasRef.current!
-    const ctx = canvas.getContext('2d')!
-    let last = performance.now()
-    let raf = 0
-
-    function update(dt: number) {
-      const k = keysRef.current
-      const left = k['arrowleft'] || k['a']
-      const right = k['arrowright'] || k['d']
-      const up = k['arrowup'] || k['w']
-      const down = k['arrowdown'] || k['s']
-
-      const vx = (right ? 1 : 0) - (left ? 1 : 0)
-      const vy = (down ? 1 : 0) - (up ? 1 : 0)
-
-      player.current.x = clamp(
-        player.current.x + vx * player.current.speed * dt,
-        0,
-        WIDTH - player.current.w
-      )
-      player.current.y = clamp(
-        player.current.y + vy * player.current.speed * dt,
-        0,
-        HEIGHT - player.current.h
-      )
-
-      if (!questionKey) {
-        // 1) Gate triggers on contact
-        const gates = stage.gates ?? []
-        const p = player.current
-        const hitGate = gates.find(
-          (g) =>
-            !answered.current.has(g.id) &&
-            rectsOverlap({ x: p.x, y: p.y, w: p.w, h: p.h }, g.area)
-        )
-        if (hitGate) {
-          setQuestionKey({ kind: 'gate', id: hitGate.id })
-          return
+    let cancelled = false
+    loadImageAssets()
+      .then((imgs) => {
+        if (cancelled) return
+        assetsRef.current = imgs
+        if (imgs.player1) {
+          const img = imgs.player1
+          playerRef.current.w = Math.round(img.width / 4)
+          playerRef.current.h = Math.round(img.height / 4)
         }
-
-        // 2) NPC triggers when close AND 'e' pressed
-        const npcs = stage.npcs ?? []
-        const nearNpc = npcs.find((n) => {
-          if (answered.current.has(n.id)) return false
-          const r = n.talkRadius ?? 80
-          const cx = player.current.x + player.current.w / 2
-          const cy = player.current.y + player.current.h / 2
-          return dist(cx, cy, n.x, n.y) <= r
-        })
-        if (nearNpc && (k['e'] || k['enter'])) {
-          setQuestionKey({ kind: 'npc', id: nearNpc.id })
-          // consume the key once to avoid double-open
-          k['e'] = false
-          k['enter'] = false
-        }
-      }
+        audioRef.current = loadAudioAssets()
+        setAssetsLoaded(true)
+      })
+      .catch(console.warn)
+    return () => {
+      cancelled = true
     }
+  }, [])
 
-    function drawBackground(s: StageConfig) {
-      if (s.bg === 'park') {
-        const g = ctx.createLinearGradient(0, 0, 0, HEIGHT)
-        g.addColorStop(0, '#1f8a5a')
-        g.addColorStop(1, '#0f5132')
-        ctx.fillStyle = g
-      } else if (s.bg === 'street') {
-        const g = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT)
-        g.addColorStop(0, '#1b2a4a')
-        g.addColorStop(1, '#0d1323')
-        ctx.fillStyle = g
-      } else if (s.bg === 'school') {
-        const g = ctx.createLinearGradient(0, 0, 0, HEIGHT)
-        g.addColorStop(0, '#5c7cfa')
-        g.addColorStop(1, '#364fc7')
-        ctx.fillStyle = g
-      } else {
-        ctx.fillStyle = '#111'
-      }
-      ctx.fillRect(0, 0, WIDTH, HEIGHT)
+  const { enableAudioNow } = useAudioManager({
+    audioRef,
+    stage,
+    assetsLoaded,
+  })
+
+  function onTrigger(kind: 'gate' | 'npc', id: string) {
+    setQuestionKey({ kind, id })
+    if (keysRef.current) {
+      keysRef.current['e'] = false
+      keysRef.current['enter'] = false
     }
+  }
 
-    function drawNPC(x: number, y: number, answeredNpc: boolean) {
-      const r = 26
-      ctx.save()
-      // body
-      ctx.beginPath()
-      ctx.arc(x, y, r, 0, Math.PI * 2)
-      ctx.fillStyle = answeredNpc ? '#c8cbd1' : '#ffe8ff'
-      ctx.fill()
-      // horn
-      ctx.beginPath()
-      ctx.moveTo(x, y - r - 8)
-      ctx.lineTo(x + 10, y - r + 8)
-      ctx.lineTo(x - 10, y - r + 8)
-      ctx.closePath()
-      ctx.fillStyle = answeredNpc ? '#b197fc' : '#e07bf8'
-      ctx.fill()
-      ctx.restore()
-    }
+  useGameLoop({
+    canvasRef,
+    keysRef,
+    stage,
+    playerRef,
+    answeredRef,
+    assetsRef,
+    questionKey,
+    onTrigger,
+    deps: [stageIndex],
+  })
 
-    function draw() {
-      ctx.clearRect(0, 0, WIDTH, HEIGHT)
-      drawBackground(stage)
-
-      // Gates
-      for (const g of stage.gates ?? []) {
-        ctx.save()
-        const isDone = answered.current.has(g.id)
-        ctx.globalAlpha = isDone ? 0.15 : 0.3
-        ctx.fillStyle = isDone ? '#9aa0a6' : '#00ff99'
-        ctx.fillRect(g.area.x, g.area.y, g.area.w, g.area.h)
-        ctx.restore()
-      }
-
-      // NPCs
-      const npcs = stage.npcs ?? []
-      for (const n of npcs) {
-        drawNPC(n.x, n.y, answered.current.has(n.id))
-      }
-
-      // Player (placeholder unicorn)
-      const p = player.current
-      ctx.save()
-      ctx.beginPath()
-      ctx.arc(
-        p.x + p.w / 2,
-        p.y + p.h / 2,
-        Math.min(p.w, p.h) / 2,
-        0,
-        Math.PI * 2
-      )
-      ctx.fillStyle = '#fff'
-      ctx.fill()
-      ctx.beginPath()
-      ctx.moveTo(p.x + p.w / 2, p.y - 6)
-      ctx.lineTo(p.x + p.w / 2 + 10, p.y + 12)
-      ctx.lineTo(p.x + p.w / 2 - 10, p.y + 12)
-      ctx.closePath()
-      ctx.fillStyle = '#e07bf8'
-      ctx.fill()
-      ctx.beginPath()
-      ctx.arc(p.x + p.w * 0.65, p.y + p.h * 0.45, 3, 0, Math.PI * 2)
-      ctx.fillStyle = '#111'
-      ctx.fill()
-      ctx.restore()
-
-      // HUD
-      ctx.save()
-      ctx.font = '16px system-ui, -apple-system, Segoe UI, Roboto, sans-serif'
-      ctx.fillStyle = '#fff'
-      ctx.shadowColor = 'rgba(0,0,0,0.7)'
-      ctx.shadowBlur = 8
-      const gatesTotal = (stage.gates ?? []).length
-      const npcsTotal = (stage.npcs ?? []).length
-      const total = gatesTotal + npcsTotal
-      const req = stage.requiredToAdvance ?? total
-      const done = answered.current.size
-      ctx.fillText(
-        `Stage: ${stage.name} — Answered: ${done}/${req} (total ${total})`,
-        16,
-        28
-      )
-      ctx.restore()
-
-      // “Press E to talk” if near an unanswered NPC
-      const cx = p.x + p.w / 2,
-        cy = p.y + p.h / 2
-      const nearNpc = npcs.find(
-        (n) =>
-          !answered.current.has(n.id) &&
-          dist(cx, cy, n.x, n.y) <= (n.talkRadius ?? 80)
-      )
-      if (nearNpc && !questionKey) {
-        ctx.save()
-        ctx.font = '14px system-ui, -apple-system, Segoe UI, Roboto, sans-serif'
-        ctx.fillStyle = '#fff'
-        ctx.shadowColor = 'rgba(0,0,0,0.7)'
-        ctx.shadowBlur = 8
-        ctx.fillText('Press E to talk', nearNpc.x - 40, nearNpc.y - 48)
-        ctx.restore()
-      }
-    }
-
-    function loop(t: number) {
-      const dt = Math.min((t - last) / 1000, 0.05)
-      last = t
-      update(dt)
-      draw()
-      raf = requestAnimationFrame(loop)
-    }
-    raf = requestAnimationFrame(loop)
-    return () => cancelAnimationFrame(raf)
-  }, [stage, questionKey, keysRef])
-
-  // Resolving questions
   const resolveQuestion = (pickedIndex: number) => {
     if (!questionKey) return
-
     if (questionKey.kind === 'gate') {
-      const gate = (stage.gates ?? []).find((g) => g.id === questionKey.id)!
-      if (pickedIndex === gate.question.correctIndex) {
-        answered.current.add(gate.id)
-      }
+      const g = (stage.gates ?? []).find((x) => x.id === questionKey.id)!
+      if (pickedIndex === g.question.correctIndex) answeredRef.current.add(g.id)
     } else {
-      // npc
-      const npc = (stage.npcs ?? []).find((n) => n.id === questionKey.id)!
-      if (pickedIndex === npc.question.correctIndex) {
-        answered.current.add(npc.id)
-      }
+      const n = (stage.npcs ?? []).find((x) => x.id === questionKey.id)!
+      if (pickedIndex === n.question.correctIndex) answeredRef.current.add(n.id)
     }
 
-    // Advance if requirement met
-    const gatesTotal = (stage.gates ?? []).length
-    const npcsTotal = (stage.npcs ?? []).length
-    const total = gatesTotal + npcsTotal
+    // progression
+    const total = (stage.gates ?? []).length + (stage.npcs ?? []).length
     const must = stage.requiredToAdvance ?? total
-
-    if (answered.current.size >= must && stage.nextStage) {
+    if (answeredRef.current.size >= must && stage.nextStage) {
       const idx = STAGES.findIndex((s) => s.name === stage.nextStage)
       if (idx >= 0) setStageIndex(idx)
     }
@@ -291,7 +105,7 @@ export default function GameCanvas() {
     setQuestionKey(null)
   }
 
-  // Active question source
+  // active prompt helper
   const activePrompt = (() => {
     if (!questionKey) return null
     if (questionKey.kind === 'gate') {
@@ -303,6 +117,57 @@ export default function GameCanvas() {
     }
   })()
 
+  // --- stage navigation helpers (stable) ---
+  const nextStage = useCallback(() => {
+    setStageIndex((i) => Math.min(i + 1, STAGES.length - 1))
+  }, [])
+
+  const prevStage = useCallback(() => {
+    setStageIndex((i) => Math.max(i - 1, 0))
+  }, [])
+
+  const jumpToStageNumber = useCallback((oneBased: number) => {
+    const idx = Math.max(0, Math.min(oneBased - 1, STAGES.length - 1))
+    setStageIndex(idx)
+  }, [])
+
+  // --- keyboard shortcuts for dev (1 => next, 2 => prev) ---
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      // ignore if typing into an input
+      const active = document.activeElement
+      if (
+        active &&
+        (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')
+      ) {
+        return
+      }
+
+      if (e.key === '1') {
+        nextStage()
+      } else if (e.key === '2') {
+        prevStage()
+      } else if (
+        /^[0-9]$/.test(e.key) &&
+        e.key !== '0' &&
+        e.ctrlKey &&
+        e.shiftKey
+      ) {
+        // (optional) example: ctrl+shift+<digit> could be used for other quick ops
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [nextStage, prevStage])
+
+  // --- helpers for Jump input ---
+  function handleJumpSubmit() {
+    const n = parseInt(jumpInput, 10)
+    if (Number.isFinite(n)) {
+      jumpToStageNumber(n)
+    }
+  }
+
   return (
     <div
       style={{
@@ -310,13 +175,101 @@ export default function GameCanvas() {
         width: WIDTH,
         maxWidth: '98vw',
         margin: '16px auto',
-        borderRadius: 16,
-        overflow: 'hidden',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-        background: '#000',
       }}
     >
+      <div style={{ position: 'absolute', right: 12, top: 12, zIndex: 999 }}>
+        <button
+          onClick={enableAudioNow}
+          style={{
+            padding: '12px 14px',
+            borderRadius: 8,
+            cursor: 'pointer',
+            display: 'block',
+          }}
+        >
+          Enable sound
+        </button>
+
+        {/* Dev navigation panel */}
+        <div
+          style={{
+            marginTop: 8,
+            padding: 8,
+            borderRadius: 8,
+            background: 'rgba(255,255,255,0.9)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+            minWidth: 180,
+            textAlign: 'center',
+          }}
+        >
+          <div style={{ marginBottom: 6, fontSize: 12, color: '#333' }}>
+            <strong>Dev Stage Nav</strong>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              gap: 6,
+              justifyContent: 'center',
+              marginBottom: 6,
+            }}
+          >
+            <button
+              onClick={prevStage}
+              style={{ padding: '6px 8px', borderRadius: 6 }}
+            >
+              Prev
+            </button>
+            <button
+              onClick={nextStage}
+              style={{ padding: '6px 8px', borderRadius: 6 }}
+            >
+              Next
+            </button>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              gap: 6,
+              justifyContent: 'center',
+              marginBottom: 6,
+            }}
+          >
+            <input
+              type='number'
+              min={1}
+              max={STAGES.length}
+              value={jumpInput}
+              onChange={(e) => setJumpInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleJumpSubmit()
+              }}
+              placeholder='stage # (1-based)'
+              style={{ padding: '6px', width: 90, borderRadius: 6 }}
+            />
+            <button
+              onClick={handleJumpSubmit}
+              style={{ padding: '6px 8px', borderRadius: 6 }}
+            >
+              Jump
+            </button>
+          </div>
+
+          <div style={{ fontSize: 12, color: '#444' }}>
+            {`Current: ${stageIndex + 1} / ${STAGES.length} — ${
+              stage?.name ?? ''
+            }`}
+          </div>
+
+          <div style={{ marginTop: 6, fontSize: 11, color: '#666' }}>
+            Press <kbd>1</kbd> next, <kbd>2</kbd> prev
+          </div>
+        </div>
+      </div>
+
       <canvas ref={canvasRef} width={WIDTH} height={HEIGHT} />
+
       {activePrompt && (
         <QuestionOverlay
           prompt={activePrompt.prompt}
