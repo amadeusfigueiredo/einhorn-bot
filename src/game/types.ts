@@ -71,6 +71,9 @@ export type LoaderImageAssets = {
   stage6Background?: HTMLImageElement
   stage7Background?: HTMLImageElement
   stage8Background?: HTMLImageElement
+  winPopup?: HTMLImageElement
+  tryAgainPopup?: HTMLImageElement
+  gameEndPopup?: HTMLImageElement
   stage1Npc1?: HTMLImageElement
   stage1Npc2?: HTMLImageElement
   stage1Npc3?: HTMLImageElement
