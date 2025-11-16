@@ -27,11 +27,10 @@ export default function GameCanvas(): JSX.Element {
     id: string
   } | null>(null)
 
-  // ✨ NEU: State für die aktive Popup-Konfiguration (WIN, TRY_AGAIN, GAME_END)
+  // State für die aktive Popup-Konfiguration (WIN, TRY_AGAIN, GAME_END)
   const [activePopupConfig, setActivePopupConfig] =
     useState<PopupConfig | null>(null)
 
-  // Player-Ref muss den Player-Typ verwenden
   const playerRef = useRef<Player>({ x: 60, y: 320, w: 56, h: 56, speed: 210 })
   const assetsRef = useRef<LoaderImageAssets | null>(null)
   const audioRef = useRef<LoaderAudioAssets | null>(null)
@@ -72,7 +71,7 @@ export default function GameCanvas(): JSX.Element {
   })
 
   function onTrigger(kind: 'gate' | 'npc', id: string) {
-    // ✨ NEU: Verhindert das Auslösen einer Frage, wenn ein Popup angezeigt wird
+    // Verhindert das Auslösen einer Frage, wenn ein Popup angezeigt wird
     if (activePopupConfig) return
 
     setQuestionKey({ kind, id })
@@ -94,17 +93,26 @@ export default function GameCanvas(): JSX.Element {
     deps: [stageIndex],
   })
 
-  // ✨ NEU: Helper-Funktion zum Anzeigen eines Popups mit automatischem Timeout
-  const showTimedPopup = useCallback((config: PopupConfig) => {
-    setActivePopupConfig(config)
-    if (config.durationMs !== null) {
-      setTimeout(() => {
-        setActivePopupConfig(null)
-      }, config.durationMs)
-    }
-  }, [])
+  // Helper-Funktion zum Anzeigen eines Popups mit automatischem Timeout
+  const showTimedPopup = useCallback(
+    (config: PopupConfig) => {
+      setActivePopupConfig(config)
+      if (config.durationMs !== null) {
+        setTimeout(() => {
+          setActivePopupConfig(null)
+          // ✨ KORREKTUR FÜR 'E'-TASTE: Setzt E und Enter zurück, nachdem das Popup geschlossen wurde
+          // Dies behebt das Problem der blockierten Eingabe nach einem Popup-Ablauf.
+          if (keysRef.current) {
+            keysRef.current['e'] = false
+            keysRef.current['enter'] = false
+          }
+        }, config.durationMs)
+      }
+    },
+    [keysRef]
+  )
 
-  // ✨ AKTUALISIERT: Logik für Popups
+  // Logik für Popups
   const resolveQuestion = (pickedIndex: number) => {
     if (!questionKey) return
     let isCorrect = false
@@ -133,7 +141,7 @@ export default function GameCanvas(): JSX.Element {
       const total = (stage.gates ?? []).length + (stage.npcs ?? []).length
       const must = stage.requiredToAdvance ?? total
 
-      const isLastStage = stage.nextStage === null
+      const isLastStage = stageIndex === STAGES.length - 1 // Prüfen, ob es die letzte Stage ist
       const isComplete = answeredRef.current.size >= must
 
       if (isComplete) {
@@ -144,8 +152,11 @@ export default function GameCanvas(): JSX.Element {
           }, POPUP_CONFIGS.WIN.durationMs ?? 0)
         } else {
           // 3. Stage-Wechsel: Gehe zur nächsten Stage
-          const idx = STAGES.findIndex((s: any) => s.name === stage.nextStage)
-          if (idx >= 0) setStageIndex(idx)
+          const nextStageName = stage.nextStage
+          if (nextStageName) {
+            const idx = STAGES.findIndex((s: any) => s.name === nextStageName)
+            if (idx >= 0) setStageIndex(idx)
+          }
         }
       }
     } else {
@@ -169,15 +180,18 @@ export default function GameCanvas(): JSX.Element {
   // --- stage navigation helpers (stable) ---
   const nextStage = useCallback(() => {
     setStageIndex((i) => Math.min(i + 1, STAGES.length - 1))
+    // Bei manuellem Sprung KEIN keysRef Reset, um Debugging zu erlauben
   }, [])
 
   const prevStage = useCallback(() => {
     setStageIndex((i) => Math.max(i - 1, 0))
+    // Bei manuellem Sprung KEIN keysRef Reset
   }, [])
 
   const jumpToStageNumber = useCallback((oneBased: number) => {
     const idx = Math.max(0, Math.min(oneBased - 1, STAGES.length - 1))
     setStageIndex(idx)
+    // Bei manuellem Sprung KEIN keysRef Reset
   }, [])
 
   // --- keyboard shortcuts for dev (1 => next, 2 => prev) ---
@@ -332,7 +346,7 @@ export default function GameCanvas(): JSX.Element {
         />
       )}
 
-      {/* ✨ NEU: Das generische Popup-Overlay wird gerendert, wenn ein Status-Popup aktiv ist */}
+      {/* Das generische Popup-Overlay wird gerendert, wenn ein Status-Popup aktiv ist */}
       {activePopupConfig && assetsLoaded && (
         <PopupOverlay
           assets={assets}
