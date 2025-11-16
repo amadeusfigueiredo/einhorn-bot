@@ -175,6 +175,9 @@ export default function GameCanvas(): JSX.Element {
         width: WIDTH,
         maxWidth: '98vw',
         margin: '16px auto',
+        // --- ADD THIS LINE ---
+        overflow: 'hidden',
+        borderRadius: '16px',
       }}
     >
       <div style={{ position: 'absolute', right: 12, top: 12, zIndex: 999 }}>
