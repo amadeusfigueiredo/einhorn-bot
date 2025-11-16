@@ -6,6 +6,10 @@ import useGameLoop from './hooks/useGameLoop'
 import useAudioManager from './hooks/useAudio'
 import { loadImageAssets, loadAudioAssets } from './utils/loader'
 import type { LoaderAudioAssets, LoaderImageAssets } from './types'
+import type { StageConfig } from './types'
+import { POPUP_CONFIGS, type PopupConfig } from './config/PopupsConfig'
+import type { Player } from './engine/update'
+import PopupOverlay from './PopupOverlay'
 
 const WIDTH = 960
 const HEIGHT = 540
@@ -15,24 +19,27 @@ export default function GameCanvas(): JSX.Element {
   const keysRef = useKeys()
 
   const [stageIndex, setStageIndex] = useState(0)
-  const stage = STAGES[stageIndex]
+  const stage: StageConfig = STAGES[stageIndex]
 
   const answeredRef = useRef(new Set<string>())
   const [questionKey, setQuestionKey] = useState<{
     kind: 'gate' | 'npc'
     id: string
   } | null>(null)
-  const playerRef = useRef({ x: 60, y: 320, w: 56, h: 56, speed: 210 })
+
+  // ✨ NEU: State für die aktive Popup-Konfiguration (WIN, TRY_AGAIN, GAME_END)
+  const [activePopupConfig, setActivePopupConfig] =
+    useState<PopupConfig | null>(null)
+
+  // Player-Ref muss den Player-Typ verwenden
+  const playerRef = useRef<Player>({ x: 60, y: 320, w: 56, h: 56, speed: 210 })
   const assetsRef = useRef<LoaderImageAssets | null>(null)
   const audioRef = useRef<LoaderAudioAssets | null>(null)
   const [assetsLoaded, setAssetsLoaded] = useState(false)
 
   // --- dev control state ---
-  const [jumpInput, setJumpInput] = useState<string>('') // 1-based input
+  const [jumpInput, setJumpInput] = useState<string>('')
 
-  // *** ADDED FIX ***
-  // Clear the set of answered questions whenever the stage changes.
-  // This prevents the count from carrying over between stages.
   useEffect(() => {
     answeredRef.current.clear()
   }, [stageIndex])
@@ -65,6 +72,9 @@ export default function GameCanvas(): JSX.Element {
   })
 
   function onTrigger(kind: 'gate' | 'npc', id: string) {
+    // ✨ NEU: Verhindert das Auslösen einer Frage, wenn ein Popup angezeigt wird
+    if (activePopupConfig) return
+
     setQuestionKey({ kind, id })
     if (keysRef.current) {
       keysRef.current['e'] = false
@@ -84,35 +94,74 @@ export default function GameCanvas(): JSX.Element {
     deps: [stageIndex],
   })
 
+  // ✨ NEU: Helper-Funktion zum Anzeigen eines Popups mit automatischem Timeout
+  const showTimedPopup = useCallback((config: PopupConfig) => {
+    setActivePopupConfig(config)
+    if (config.durationMs !== null) {
+      setTimeout(() => {
+        setActivePopupConfig(null)
+      }, config.durationMs)
+    }
+  }, [])
+
+  // ✨ AKTUALISIERT: Logik für Popups
   const resolveQuestion = (pickedIndex: number) => {
     if (!questionKey) return
+    let isCorrect = false
+
+    // Bestimme, ob die Antwort korrekt war
     if (questionKey.kind === 'gate') {
-      const g = (stage.gates ?? []).find((x) => x.id === questionKey.id)!
-      if (pickedIndex === g.question.correctIndex) answeredRef.current.add(g.id)
+      const g = (stage.gates ?? []).find((x: any) => x.id === questionKey.id)!
+      if (pickedIndex === g.question.correctIndex) {
+        answeredRef.current.add(g.id)
+        isCorrect = true
+      }
     } else {
-      const n = (stage.npcs ?? []).find((x) => x.id === questionKey.id)!
-      if (pickedIndex === n.question.correctIndex) answeredRef.current.add(n.id)
+      const n = (stage.npcs ?? []).find((x: any) => x.id === questionKey.id)!
+      if (pickedIndex === n.question.correctIndex) {
+        answeredRef.current.add(n.id)
+        isCorrect = true
+      }
     }
 
-    // progression
-    const total = (stage.gates ?? []).length + (stage.npcs ?? []).length
-    const must = stage.requiredToAdvance ?? total
-    if (answeredRef.current.size >= must && stage.nextStage) {
-      const idx = STAGES.findIndex((s) => s.name === stage.nextStage)
-      if (idx >= 0) setStageIndex(idx)
-    }
+    setQuestionKey(null) // Schließt das Fragen-Overlay sofort
 
-    setQuestionKey(null)
+    if (isCorrect) {
+      // 1. Richtige Antwort: Zeige WIN-Popup
+      showTimedPopup(POPUP_CONFIGS.WIN)
+
+      const total = (stage.gates ?? []).length + (stage.npcs ?? []).length
+      const must = stage.requiredToAdvance ?? total
+
+      const isLastStage = stage.nextStage === null
+      const isComplete = answeredRef.current.size >= must
+
+      if (isComplete) {
+        if (isLastStage) {
+          // 2. Spielende: Zeige GAME_END-Popup nach Ablauf des WIN-Popups
+          setTimeout(() => {
+            setActivePopupConfig(POPUP_CONFIGS.GAME_END)
+          }, POPUP_CONFIGS.WIN.durationMs ?? 0)
+        } else {
+          // 3. Stage-Wechsel: Gehe zur nächsten Stage
+          const idx = STAGES.findIndex((s: any) => s.name === stage.nextStage)
+          if (idx >= 0) setStageIndex(idx)
+        }
+      }
+    } else {
+      // 4. Falsche Antwort: Zeige TRY_AGAIN-Popup
+      showTimedPopup(POPUP_CONFIGS.TRY_AGAIN)
+    }
   }
 
   // active prompt helper
   const activePrompt = (() => {
     if (!questionKey) return null
     if (questionKey.kind === 'gate') {
-      const g = (stage.gates ?? []).find((x) => x.id === questionKey.id)!
+      const g = (stage.gates ?? []).find((x: any) => x.id === questionKey.id)!
       return { prompt: g.question.prompt, choices: g.question.choices }
     } else {
-      const n = (stage.npcs ?? []).find((x) => x.id === questionKey.id)!
+      const n = (stage.npcs ?? []).find((x: any) => x.id === questionKey.id)!
       return { prompt: n.question.prompt, choices: n.question.choices }
     }
   })()
@@ -168,6 +217,8 @@ export default function GameCanvas(): JSX.Element {
     }
   }
 
+  const assets = assetsRef.current || ({} as LoaderImageAssets)
+
   return (
     <div
       style={{
@@ -175,7 +226,6 @@ export default function GameCanvas(): JSX.Element {
         width: WIDTH,
         maxWidth: '98vw',
         margin: '16px auto',
-        // --- ADD THIS LINE ---
         overflow: 'hidden',
         borderRadius: '16px',
       }}
@@ -273,11 +323,21 @@ export default function GameCanvas(): JSX.Element {
 
       <canvas ref={canvasRef} width={WIDTH} height={HEIGHT} />
 
+      {/* Das Fragen-Overlay wird gerendert, wenn eine Frage aktiv ist */}
       {activePrompt && (
         <QuestionOverlay
           prompt={activePrompt.prompt}
           choices={activePrompt.choices}
           onPick={resolveQuestion}
+        />
+      )}
+
+      {/* ✨ NEU: Das generische Popup-Overlay wird gerendert, wenn ein Status-Popup aktiv ist */}
+      {activePopupConfig && assetsLoaded && (
+        <PopupOverlay
+          assets={assets}
+          config={activePopupConfig}
+          onClose={() => setActivePopupConfig(null)}
         />
       )}
     </div>
