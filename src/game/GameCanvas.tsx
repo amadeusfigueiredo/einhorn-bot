@@ -6,13 +6,14 @@ import useGameLoop from './hooks/useGameLoop'
 import useAudioManager from './hooks/useAudio'
 import { loadImageAssets, loadAudioAssets } from './utils/loader'
 import type { LoaderAudioAssets, LoaderImageAssets } from './types'
-import type { StageConfig } from './types'
+import type { StageConfig, Player } from './types'
 import { POPUP_CONFIGS, type PopupConfig } from './config/PopupsConfig'
-import type { Player } from './types'
 import PopupOverlay from './PopupOverlay'
 import { HEIGHT, WIDTH } from './constants/dimensions'
 import StagesNavigation from '../components/StagesNavigation'
 import { useDevNavigation } from './hooks/useDevNavigation'
+import { getActivePrompt } from './utils/getActivePrompt'
+import { useGameActions } from './hooks/useGameActions'
 
 export default function GameCanvas(): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -77,8 +78,14 @@ export default function GameCanvas(): JSX.Element {
     assetsLoaded,
   })
 
+  // ******************************************************
+  // * IHR GEWÜNSCHTER CODE: KEINE BLOCKIERUNG HIER *
+  // ******************************************************
   const onTrigger = useCallback(
     (kind: 'gate' | 'npc', id: string) => {
+      // Wichtig: Blockierung (if activePopupConfig) wurde hier entfernt.
+      // Die Blockierung wird nun nur über das Fehlen des activePrompt (Fragen-Overlay) gesteuert.
+
       setQuestionKey({ kind, id })
       if (keysRef.current) {
         // Konsumiert die Tasten, um keine doppelten Auslöser zu erhalten
@@ -86,8 +93,11 @@ export default function GameCanvas(): JSX.Element {
         keysRef.current['enter'] = false
       }
     },
+    // Abhängigkeit activePopupConfig wurde hier entfernt, wie gewünscht.
     [keysRef, setQuestionKey]
   )
+  // ******************************************************
+
   useGameLoop({
     canvasRef,
     keysRef,
@@ -107,8 +117,7 @@ export default function GameCanvas(): JSX.Element {
       if (config.durationMs !== null) {
         setTimeout(() => {
           setActivePopupConfig(null)
-          // ✨ KORREKTUR FÜR 'E'-TASTE: Setzt E und Enter zurück, nachdem das Popup geschlossen wurde
-          // Dies behebt das Problem der blockierten Eingabe nach einem Popup-Ablauf.
+          // KORREKTUR FÜR 'E'-TASTE: Setzt E und Enter zurück
           if (keysRef.current) {
             keysRef.current['e'] = false
             keysRef.current['enter'] = false
@@ -173,43 +182,7 @@ export default function GameCanvas(): JSX.Element {
   }
 
   // active prompt helper
-  const activePrompt = (() => {
-    if (!questionKey) return null
-    if (questionKey.kind === 'gate') {
-      const g = (stage.gates ?? []).find((x: any) => x.id === questionKey.id)!
-      return { prompt: g.question.prompt, choices: g.question.choices }
-    } else {
-      const n = (stage.npcs ?? []).find((x: any) => x.id === questionKey.id)!
-      return { prompt: n.question.prompt, choices: n.question.choices }
-    }
-  })()
-
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      const active = document.activeElement
-      if (
-        active &&
-        (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')
-      ) {
-        return
-      }
-
-      if (e.key === '1') {
-        nextStage()
-      } else if (e.key === '2') {
-        prevStage()
-      } else if (
-        /^[0-9]$/.test(e.key) &&
-        e.key !== '0' &&
-        e.ctrlKey &&
-        e.shiftKey
-      ) {
-        // (optional) example: ctrl+shift+<digit> could be used for other quick ops
-      }
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [nextStage, prevStage])
+  const activePrompt = getActivePrompt(questionKey, stage)
 
   const assets = assetsRef.current || ({} as LoaderImageAssets)
 
