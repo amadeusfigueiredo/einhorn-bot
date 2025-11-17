@@ -71,6 +71,9 @@ export type LoaderImageAssets = {
   stage6Background?: HTMLImageElement
   stage7Background?: HTMLImageElement
   stage8Background?: HTMLImageElement
+  winPopup?: HTMLImageElement
+  tryAgainPopup?: HTMLImageElement
+  gameEndPopup?: HTMLImageElement
   stage1Npc1?: HTMLImageElement
   stage1Npc2?: HTMLImageElement
   stage1Npc3?: HTMLImageElement
@@ -83,4 +86,21 @@ export type LoaderAudioAssets = {
   stage1?: HTMLAudioElement
   stage2?: HTMLAudioElement
   stage3?: HTMLAudioElement
+}
+
+export type Player = {
+  x: number
+  y: number
+  w: number
+  h: number
+  speed: number
+}
+
+export type UpdateParams = {
+  dt: number
+  keys: Keys
+  player: Player
+  stage: StageConfig
+  answered: Set<string>
+  onTrigger: (kind: 'gate' | 'npc', id: string) => void
 }

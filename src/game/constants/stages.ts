@@ -1,4 +1,4 @@
-import type { StageConfig } from './types'
+import type { StageConfig } from '../types'
 
 export const STAGES: StageConfig[] = [
   {

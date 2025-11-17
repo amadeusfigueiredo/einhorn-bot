@@ -53,6 +53,10 @@ export async function loadImageAssets({
     'stage1Npc4',
     'stage2Npc1',
     'player1',
+    // --- New Popup Asset Keys ---
+    'winPopup',
+    'tryAgainPopup',
+    'gameEndPopup',
   ]
 
   const keys = imageKeys ?? defaultKeys
