@@ -7,6 +7,11 @@ export type SceneName =
   | 'stage5'
   | 'stage6'
   | 'stage7'
+  | 'stage8'
+  | 'stage9'
+  | 'stage10'
+  | 'stage11'
+  | 'stage12'
 
 export type Rect = { x: number; y: number; w: number; h: number }
 
@@ -43,6 +48,11 @@ export type StageConfig = {
     | 'stage5Background'
     | 'stage6Background'
     | 'stage7Background'
+    | 'stage8Background'
+    | 'stage9Background'
+    | 'stage10Background'
+    | 'stage11Background'
+    | 'stage12Background'
 
   requiredToAdvance?: number // default: all gates + all NPCs
   nextStage?: SceneName | null
@@ -71,6 +81,10 @@ export type LoaderImageAssets = {
   stage6Background?: HTMLImageElement
   stage7Background?: HTMLImageElement
   stage8Background?: HTMLImageElement
+  stage9Background?: HTMLImageElement
+  stage10Background?: HTMLImageElement
+  stage11Background?: HTMLImageElement
+  stage12Background?: HTMLImageElement
   winPopup?: HTMLImageElement
   tryAgainPopup?: HTMLImageElement
   gameEndPopup?: HTMLImageElement
@@ -79,6 +93,23 @@ export type LoaderImageAssets = {
   stage1Npc3?: HTMLImageElement
   stage1Npc4?: HTMLImageElement
   stage2Npc1?: HTMLImageElement
+  stage2Npc2?: HTMLImageElement
+  stage2Npc3?: HTMLImageElement
+  stage3Npc1?: HTMLImageElement
+  stage3Npc2?: HTMLImageElement
+  stage3Npc3?: HTMLImageElement
+  stage4Npc1?: HTMLImageElement
+  stage4Npc2?: HTMLImageElement
+  stage4Npc3?: HTMLImageElement
+  stage5Npc1?: HTMLImageElement
+  stage5Npc2?: HTMLImageElement
+  stage5Npc3?: HTMLImageElement
+  stage6Npc1?: HTMLImageElement
+  stage6Npc2?: HTMLImageElement
+  stage6Npc3?: HTMLImageElement
+  stage7Npc1?: HTMLImageElement
+  stage7Npc2?: HTMLImageElement
+  stage7Npc3?: HTMLImageElement
   player1?: HTMLImageElement
 }
 
