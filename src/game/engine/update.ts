@@ -1,23 +1,5 @@
-import type { Keys } from '../types'
+import type { UpdateParams } from '../types'
 import { rectsOverlap, dist } from '../utils/collision'
-import type { StageConfig } from '../types'
-
-export type Player = {
-  x: number
-  y: number
-  w: number
-  h: number
-  speed: number
-}
-
-export type UpdateParams = {
-  dt: number
-  keys: Keys
-  player: Player
-  stage: StageConfig
-  answered: Set<string>
-  onTrigger: (kind: 'gate' | 'npc', id: string) => void
-}
 
 export function updateGame(params: UpdateParams) {
   const { dt, keys, player, stage, answered, onTrigger } = params

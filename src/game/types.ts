@@ -87,3 +87,20 @@ export type LoaderAudioAssets = {
   stage2?: HTMLAudioElement
   stage3?: HTMLAudioElement
 }
+
+export type Player = {
+  x: number
+  y: number
+  w: number
+  h: number
+  speed: number
+}
+
+export type UpdateParams = {
+  dt: number
+  keys: Keys
+  player: Player
+  stage: StageConfig
+  answered: Set<string>
+  onTrigger: (kind: 'gate' | 'npc', id: string) => void
+}
