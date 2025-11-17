@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react'
-import type { Player } from '../engine/update'
 import { updateGame } from '../engine/update'
-import { drawScene } from '../engine/draw'
-import type { Keys, LoaderImageAssets } from '../types'
+import { drawScene } from '../engine/drawScene'
+import type { Keys, LoaderImageAssets, Player } from '../types'
 import type { StageConfig } from '../types'
 
 type Params = {

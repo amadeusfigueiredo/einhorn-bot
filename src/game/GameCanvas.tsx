@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback, type JSX } from 'react'
 import QuestionOverlay from './QuestionOverlay'
-import { STAGES } from './stages'
+import { STAGES } from './constants/stages'
 import useKeys from './hooks/useKeys'
 import useGameLoop from './hooks/useGameLoop'
 import useAudioManager from './hooks/useAudio'
@@ -8,11 +8,11 @@ import { loadImageAssets, loadAudioAssets } from './utils/loader'
 import type { LoaderAudioAssets, LoaderImageAssets } from './types'
 import type { StageConfig } from './types'
 import { POPUP_CONFIGS, type PopupConfig } from './config/PopupsConfig'
-import type { Player } from './engine/update'
+import type { Player } from './types'
 import PopupOverlay from './PopupOverlay'
-
-const WIDTH = 960
-const HEIGHT = 540
+import { HEIGHT, WIDTH } from './constants/dimensions'
+import StagesNavigation from '../components/StagesNavigation'
+import { useDevNavigation } from './hooks/useDevNavigation'
 
 export default function GameCanvas(): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -37,7 +37,14 @@ export default function GameCanvas(): JSX.Element {
   const [assetsLoaded, setAssetsLoaded] = useState(false)
 
   // --- dev control state ---
-  const [jumpInput, setJumpInput] = useState<string>('')
+  const {
+    jumpInput,
+    setJumpInput,
+    handleJumpSubmit,
+    nextStage,
+    prevStage,
+    totalStages,
+  } = useDevNavigation({ setStageIndex, currentStageIndex: stageIndex })
 
   useEffect(() => {
     answeredRef.current.clear()
@@ -70,17 +77,17 @@ export default function GameCanvas(): JSX.Element {
     assetsLoaded,
   })
 
-  function onTrigger(kind: 'gate' | 'npc', id: string) {
-    // Verhindert das Auslösen einer Frage, wenn ein Popup angezeigt wird
-    if (activePopupConfig) return
-
-    setQuestionKey({ kind, id })
-    if (keysRef.current) {
-      keysRef.current['e'] = false
-      keysRef.current['enter'] = false
-    }
-  }
-
+  const onTrigger = useCallback(
+    (kind: 'gate' | 'npc', id: string) => {
+      setQuestionKey({ kind, id })
+      if (keysRef.current) {
+        // Konsumiert die Tasten, um keine doppelten Auslöser zu erhalten
+        keysRef.current['e'] = false
+        keysRef.current['enter'] = false
+      }
+    },
+    [keysRef, setQuestionKey]
+  )
   useGameLoop({
     canvasRef,
     keysRef,
@@ -177,27 +184,8 @@ export default function GameCanvas(): JSX.Element {
     }
   })()
 
-  // --- stage navigation helpers (stable) ---
-  const nextStage = useCallback(() => {
-    setStageIndex((i) => Math.min(i + 1, STAGES.length - 1))
-    // Bei manuellem Sprung KEIN keysRef Reset, um Debugging zu erlauben
-  }, [])
-
-  const prevStage = useCallback(() => {
-    setStageIndex((i) => Math.max(i - 1, 0))
-    // Bei manuellem Sprung KEIN keysRef Reset
-  }, [])
-
-  const jumpToStageNumber = useCallback((oneBased: number) => {
-    const idx = Math.max(0, Math.min(oneBased - 1, STAGES.length - 1))
-    setStageIndex(idx)
-    // Bei manuellem Sprung KEIN keysRef Reset
-  }, [])
-
-  // --- keyboard shortcuts for dev (1 => next, 2 => prev) ---
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      // ignore if typing into an input
       const active = document.activeElement
       if (
         active &&
@@ -223,14 +211,6 @@ export default function GameCanvas(): JSX.Element {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [nextStage, prevStage])
 
-  // --- helpers for Jump input ---
-  function handleJumpSubmit() {
-    const n = parseInt(jumpInput, 10)
-    if (Number.isFinite(n)) {
-      jumpToStageNumber(n)
-    }
-  }
-
   const assets = assetsRef.current || ({} as LoaderImageAssets)
 
   return (
@@ -244,100 +224,18 @@ export default function GameCanvas(): JSX.Element {
         borderRadius: '16px',
       }}
     >
-      <div style={{ position: 'absolute', right: 12, top: 12, zIndex: 999 }}>
-        <button
-          onClick={enableAudioNow}
-          style={{
-            padding: '12px 14px',
-            borderRadius: 8,
-            cursor: 'pointer',
-            display: 'block',
-          }}
-        >
-          Enable sound
-        </button>
-
-        {/* Dev navigation panel */}
-        <div
-          style={{
-            marginTop: 8,
-            padding: 8,
-            borderRadius: 8,
-            background: 'rgba(255,255,255,0.9)',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-            minWidth: 180,
-            textAlign: 'center',
-          }}
-        >
-          <div style={{ marginBottom: 6, fontSize: 12, color: '#333' }}>
-            <strong>Dev Stage Nav</strong>
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              gap: 6,
-              justifyContent: 'center',
-              marginBottom: 6,
-            }}
-          >
-            <button
-              onClick={prevStage}
-              style={{ padding: '6px 8px', borderRadius: 6 }}
-            >
-              Prev
-            </button>
-            <button
-              onClick={nextStage}
-              style={{ padding: '6px 8px', borderRadius: 6 }}
-            >
-              Next
-            </button>
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              gap: 6,
-              justifyContent: 'center',
-              marginBottom: 6,
-            }}
-          >
-            <input
-              type='number'
-              min={1}
-              max={STAGES.length}
-              value={jumpInput}
-              onChange={(e) => setJumpInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleJumpSubmit()
-              }}
-              placeholder='stage # (1-based)'
-              style={{ padding: '6px', width: 90, borderRadius: 6 }}
-            />
-            <button
-              onClick={handleJumpSubmit}
-              style={{ padding: '6px 8px', borderRadius: 6 }}
-            >
-              Jump
-            </button>
-          </div>
-
-          <div style={{ fontSize: 12, color: '#444' }}>
-            {`Current: ${stageIndex + 1} / ${STAGES.length} — ${
-              stage?.name ?? ''
-            }`}
-          </div>
-
-          <div style={{ marginTop: 6, fontSize: 11, color: '#666' }}>
-            Press <kbd>1</kbd> next, <kbd>2</kbd> prev
-          </div>
-        </div>
-      </div>
-
+      <StagesNavigation
+        enableAudioNow={enableAudioNow}
+        stageIndex={stageIndex}
+        stage={stage}
+        jumpInput={jumpInput}
+        setJumpInput={setJumpInput}
+        handleJumpSubmit={handleJumpSubmit}
+        nextStage={nextStage}
+        prevStage={prevStage}
+        totalStages={totalStages}
+      />
       <canvas ref={canvasRef} width={WIDTH} height={HEIGHT} />
-
-      {/* Das Fragen-Overlay wird gerendert, wenn eine Frage aktiv ist */}
       {activePrompt && (
         <QuestionOverlay
           prompt={activePrompt.prompt}
@@ -345,8 +243,6 @@ export default function GameCanvas(): JSX.Element {
           onPick={resolveQuestion}
         />
       )}
-
-      {/* Das generische Popup-Overlay wird gerendert, wenn ein Status-Popup aktiv ist */}
       {activePopupConfig && assetsLoaded && (
         <PopupOverlay
           assets={assets}
