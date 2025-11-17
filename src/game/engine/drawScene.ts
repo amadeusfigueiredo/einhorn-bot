@@ -1,15 +1,11 @@
-import type { Player } from './update'
-import type { LoaderImageAssets, StageConfig } from '../types'
-import {
-  drawBackground,
-  drawGates,
-  drawHUD,
-  drawNPC,
-  drawPlayer,
-} from '../renderer'
-
-const WIDTH = 960
-const HEIGHT = 540
+import type { LoaderImageAssets, StageConfig, Player } from '../types'
+import { drawGates } from '../renderer'
+import { drawNPC } from '../engine/drawNPC'
+import { drawHUD } from '../utils/drawHUD'
+import { drawBackground } from '../utils/drawBackground'
+import { drawPlayer } from '../utils/drawPlayer'
+import { HEIGHT, WIDTH } from '../constants/dimensions'
+import { roundRect } from '../utils/roundRect'
 
 export function drawScene(
   ctx: CanvasRenderingContext2D,
@@ -46,28 +42,8 @@ export function drawScene(
       !answered.has(n.id) &&
       Math.hypot(cx - n.x, cy - n.y) <= (n.talkRadius ?? 80)
   )
-  // Assuming this code is inside your drawScene function, right after defining nearNpc:
   if (nearNpc) {
     // --- Helper Function (Required for Rounded Corners) ---
-    // Define the roundRect function here for a clean copy-paste block
-    function roundRect(
-      ctx: CanvasRenderingContext2D,
-      x: number,
-      y: number,
-      w: number,
-      h: number,
-      r: number
-    ) {
-      if (w < 2 * r) r = w / 2
-      if (h < 2 * r) r = h / 2
-      ctx.beginPath()
-      ctx.moveTo(x + r, y)
-      ctx.arcTo(x + w, y, x + w, y + h, r)
-      ctx.arcTo(x + w, y + h, x, y + h, r)
-      ctx.arcTo(x, y + h, x, y, r)
-      ctx.arcTo(x, y, x + w, y, r)
-      ctx.closePath()
-    }
 
     // 1. Define the text and set up font
     const text = 'Druck mal E'
