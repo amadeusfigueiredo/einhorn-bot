@@ -2,6 +2,9 @@ import type { LoaderAudioAssets, LoaderImageAssets } from '../types'
 
 export type LoaderAssets = LoaderImageAssets & LoaderAudioAssets
 
+const MAX_STAGE = 12
+const NPCS_PER_STAGE = 3
+
 export async function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -27,6 +30,32 @@ export function makeAudio(
   }
 }
 
+function makeDefaultImageKeys(): Array<keyof LoaderImageAssets> {
+  const keys: string[] = []
+
+  // backgrounds: stage1Background ... stage12Background
+  for (let s = 1; s <= MAX_STAGE; s++) keys.push(`stage${s}Background`)
+
+  // NPCs: stage1Npc1..3 ... stage12Npc1..3
+  for (let s = 1; s <= MAX_STAGE; s++) {
+    for (let n = 1; n <= NPCS_PER_STAGE; n++) keys.push(`stage${s}Npc${n}`)
+  }
+
+  // special case
+  keys.push('stage1Npc4')
+
+  // player + popups
+  keys.push('player1', 'winPopup', 'tryAgainPopup', 'gameEndPopup')
+
+  return keys as Array<keyof LoaderImageAssets>
+}
+
+function makeDefaultAudioKeys(): Array<keyof LoaderAudioAssets> {
+  const keys: string[] = []
+  for (let s = 1; s <= MAX_STAGE; s++) keys.push(`stage${s}`)
+  return keys as Array<keyof LoaderAudioAssets>
+}
+
 export async function loadImageAssets({
   imageKeys,
   path = '/assets/',
@@ -38,49 +67,8 @@ export async function loadImageAssets({
 } = {}): Promise<LoaderImageAssets> {
   const assets: LoaderImageAssets = {}
 
-  const defaultKeys: Array<keyof LoaderImageAssets> = [
-    'stage1Background',
-    'stage2Background',
-    'stage3Background',
-    'stage4Background',
-    'stage5Background',
-    'stage6Background',
-    'stage7Background',
-    'stage8Background',
-    'stage9Background',
-    'stage10Background',
-    'stage11Background',
-    'stage12Background',
-    'stage1Npc1',
-    'stage1Npc2',
-    'stage1Npc3',
-    'stage1Npc4',
-    'stage2Npc1',
-    'stage2Npc2',
-    'stage2Npc3',
-    'stage3Npc1',
-    'stage3Npc2',
-    'stage3Npc3',
-    'stage4Npc1',
-    'stage4Npc2',
-    'stage4Npc3',
-    'stage5Npc1',
-    'stage5Npc2',
-    'stage5Npc3',
-    'stage6Npc1',
-    'stage6Npc2',
-    'stage6Npc3',
-    'stage7Npc1',
-    'stage7Npc2',
-    'stage7Npc3',
-    'player1',
-    // --- New Popup Asset Keys ---
-    'winPopup',
-    'tryAgainPopup',
-    'gameEndPopup',
-  ]
-
-  const keys = imageKeys ?? defaultKeys
+  // ✅ changed: generate defaults instead of hardcoding
+  const keys = imageKeys ?? makeDefaultImageKeys()
 
   const results = await Promise.all(
     keys.map(async (key) => {
@@ -113,12 +101,8 @@ export function loadAudioAssets({
 } = {}): LoaderAudioAssets {
   const assets: LoaderAudioAssets = {}
 
-  const defaultKeys: Array<keyof LoaderAudioAssets> = [
-    'stage1',
-    'stage2',
-    'stage3',
-  ]
-  const keys = audioKeys ?? defaultKeys
+  // ✅ changed: generate defaults instead of hardcoding
+  const keys = audioKeys ?? makeDefaultAudioKeys()
 
   for (const k of keys) {
     const filename = `${String(k)}${ext}`
