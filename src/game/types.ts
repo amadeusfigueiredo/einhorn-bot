@@ -41,18 +41,18 @@ export type NPC = {
 export type StageConfig = {
   name: SceneName
   background?:
-    | 'stage1Background'
-    | 'stage2Background'
-    | 'stage3Background'
-    | 'stage4Background'
-    | 'stage5Background'
-    | 'stage6Background'
-    | 'stage7Background'
-    | 'stage8Background'
-    | 'stage9Background'
-    | 'stage10Background'
-    | 'stage11Background'
-    | 'stage12Background'
+  | 'stage1Background'
+  | 'stage2Background'
+  | 'stage3Background'
+  | 'stage4Background'
+  | 'stage5Background'
+  | 'stage6Background'
+  | 'stage7Background'
+  | 'stage8Background'
+  | 'stage9Background'
+  | 'stage10Background'
+  | 'stage11Background'
+  | 'stage12Background'
 
   requiredToAdvance?: number // default: all gates + all NPCs
   nextStage?: SceneName | null
@@ -110,6 +110,21 @@ export type LoaderImageAssets = {
   stage7Npc1?: HTMLImageElement
   stage7Npc2?: HTMLImageElement
   stage7Npc3?: HTMLImageElement
+  stage8Npc1?: HTMLImageElement
+  stage8Npc2?: HTMLImageElement
+  stage8Npc3?: HTMLImageElement
+  stage9Npc1?: HTMLImageElement
+  stage9Npc2?: HTMLImageElement
+  stage9Npc3?: HTMLImageElement
+  stage10Npc1?: HTMLImageElement
+  stage10Npc2?: HTMLImageElement
+  stage10Npc3?: HTMLImageElement
+  stage11Npc1?: HTMLImageElement
+  stage11Npc2?: HTMLImageElement
+  stage11Npc3?: HTMLImageElement
+  stage12Npc1?: HTMLImageElement
+  stage12Npc2?: HTMLImageElement
+  stage12Npc3?: HTMLImageElement
   player1?: HTMLImageElement
 }
 
