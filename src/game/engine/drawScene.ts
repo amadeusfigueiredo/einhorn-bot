@@ -46,12 +46,13 @@ export function drawScene(
     // --- Helper Function (Required for Rounded Corners) ---
 
     // 1. Define the text and set up font
-    const text = 'Druck mal E'
+    const text = '✨ Druck mal E ✨'
 
     ctx.save()
 
     // 2. Set the Font and Centering Alignment
-    ctx.font = '24px system-ui, -apple-system, Segoe UI, Roboto, sans-serif'
+    ctx.font =
+      "600 22px 'Fredoka', 'Baloo 2', system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
 
     // Set text alignment and baseline for perfect centering
     ctx.textAlign = 'center'
@@ -80,22 +81,22 @@ export function drawScene(
     ctx.beginPath()
     ctx.lineWidth = 4 // Thicker border
 
-    // --- RAINBOW GRADIENT SETUP ---
-    // Create a Linear Gradient across the box width (for a horizontal rainbow look)
+    // --- VIOLET/PINK GRADIENT BORDER ---
     const gradient = ctx.createLinearGradient(boxX, 0, boxX + boxWidth, 0)
-    gradient.addColorStop(0, '#FF00A0') // Hot Pink
-    gradient.addColorStop(0.2, '#FFD700') // Gold
-    gradient.addColorStop(0.4, '#ADFF2F') // Green-Yellow
-    gradient.addColorStop(0.6, '#00FFFF') // Cyan
-    gradient.addColorStop(0.8, '#5D3FD3') // Purple
-    gradient.addColorStop(1, '#FF69B4') // Pink
+    gradient.addColorStop(0, '#FF4FB8') // Hot Pink
+    gradient.addColorStop(0.3, '#FFD166') // Gold
+    gradient.addColorStop(0.6, '#C9A7FF') // Lavender
+    gradient.addColorStop(1, '#8A5CF6') // Violet
     ctx.strokeStyle = gradient // Apply the gradient to the border
 
-    // Dark grey background
-    ctx.fillStyle = 'rgba(30, 30, 30, 0.8)'
+    // Soft violet background
+    const fillGradient = ctx.createLinearGradient(boxX, 0, boxX + boxWidth, 0)
+    fillGradient.addColorStop(0, 'rgba(109, 63, 201, 0.85)')
+    fillGradient.addColorStop(1, 'rgba(255, 79, 184, 0.75)')
+    ctx.fillStyle = fillGradient
 
     // Apply shadow to the box for depth
-    ctx.shadowColor = 'rgba(0,0,0,0.8)'
+    ctx.shadowColor = 'rgba(74, 46, 110, 0.5)'
     ctx.shadowBlur = 10
 
     // Use the roundRect helper to define the box shape

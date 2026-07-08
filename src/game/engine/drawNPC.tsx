@@ -6,10 +6,10 @@ export function drawNPC(
   x: number,
   y: number,
   answeredNpc: boolean,
-  stage?: StageConfig,
+  _stage?: StageConfig,
   assets?: LoaderImageAssets,
-  canvasW?: number,
-  canvasH?: number,
+  _canvasW?: number,
+  _canvasH?: number,
   npc?: NPC | any
 ) {
   const id = npc?.id ?? null
