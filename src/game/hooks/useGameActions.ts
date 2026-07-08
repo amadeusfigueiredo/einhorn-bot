@@ -1,4 +1,5 @@
-import { useCallback, MutableRefObject } from 'react'
+import { useCallback } from 'react'
+import type { MutableRefObject } from 'react'
 import type { StageConfig, Keys } from '../types'
 import type { PopupConfig } from '../config/PopupsConfig'
 import { POPUP_CONFIGS } from '../config/PopupsConfig'

@@ -3,19 +3,9 @@ import GameCanvas from './game/GameCanvas'
 
 export default function App() {
   return (
-    <body
-      style={{
-        minHeight: '100vh',
-        minWidth: '100vw',
-        background: '#17171a',
-        color: '#fff',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
+    <div className="app-shell">
       <Header />
       <GameCanvas />
-    </body>
+    </div>
   )
 }

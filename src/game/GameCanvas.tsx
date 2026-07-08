@@ -13,7 +13,6 @@ import { HEIGHT, WIDTH } from './constants/dimensions'
 import StagesNavigation from '../components/StagesNavigation'
 import { useDevNavigation } from './hooks/useDevNavigation'
 import { getActivePrompt } from './utils/getActivePrompt'
-import { useGameActions } from './hooks/useGameActions'
 
 export default function GameCanvas(): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -188,13 +187,13 @@ export default function GameCanvas(): JSX.Element {
 
   return (
     <div
+      className="game-frame"
       style={{
         position: 'relative',
         width: WIDTH,
         maxWidth: '98vw',
         margin: '16px auto',
         overflow: 'hidden',
-        borderRadius: '16px',
       }}
     >
       <StagesNavigation

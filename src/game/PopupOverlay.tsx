@@ -13,11 +13,11 @@ export default function PopupOverlay({
   // Verwendet config.imageKey, um sicher auf das Bild aus assets zuzugreifen
   const image = assets[config.imageKey]
 
-  // Regenbogen-Gradienten-Stile für Konsistenz
+  // Violet/pink-leaning rainbow gradient, matching the unicorn theme
   const rainbowGradient =
-    'linear-gradient(to right, #FF00A0 0%, #FFD700 20%, #ADFF2F 40%, #00FFFF 60%, #5D3FD3 80%, #FF69B4 100%)'
-  const borderRadius = '16px'
-  const borderThickness = '4px'
+    'linear-gradient(to right, #FF4FB8 0%, #FFD166 20%, #C9A7FF 45%, #8A5CF6 70%, #FF8AD4 100%)'
+  const borderRadius = '20px'
+  const borderThickness = '5px'
 
   // Bestimmt, ob ein Schließen-Button benötigt wird (nur für GAME_END)
   const needsCloseButton = config.durationMs === null
@@ -29,16 +29,17 @@ export default function PopupOverlay({
         inset: 0,
         display: 'grid',
         placeItems: 'center',
-        background: 'rgba(0,0,0,0.6)', // Dunklerer Hintergrund für Fokus
+        background: 'rgba(74, 46, 110, 0.6)', // Weicher violetter Fokus-Hintergrund
         zIndex: 1000,
         borderRadius: borderRadius,
         animation: 'fadeIn 0.5s ease-out',
+        fontFamily: "'Fredoka', system-ui, sans-serif",
       }}
     >
       <div
         style={{
           padding: '2rem',
-          background: '#fff',
+          background: 'linear-gradient(180deg, #fff7fd 0%, #fdf0ff 100%)',
           borderRadius: borderRadius,
           border: `${borderThickness} solid transparent`,
           borderImage: `${rainbowGradient} 1 / ${borderThickness} / 0 stretch`,
@@ -80,21 +81,24 @@ export default function PopupOverlay({
         {needsCloseButton && (
           <button
             onClick={onClose}
+            className="choice-btn"
             style={{
               marginTop: '1.5rem',
-              padding: '12px 24px',
-              borderRadius: '12px',
-              border: '2px solid #5D3FD3', // Lila Button-Rand
-              background: '#f0f8ff',
-              color: '#5D3FD3',
+              padding: '12px 28px',
+              borderRadius: '14px',
+              border: 'none',
+              background:
+                'linear-gradient(135deg, #8A5CF6, #FF4FB8)',
+              color: '#fff',
               fontSize: '1.2rem',
-              fontWeight: 'bold',
+              fontWeight: 700,
               cursor: 'pointer',
               textTransform: 'uppercase',
-              boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+              boxShadow: '0 4px 14px rgba(138, 92, 246, 0.45)',
+              transition: 'transform 0.12s ease, box-shadow 0.12s ease',
             }}
           >
-            Abschließen
+            ✨ Weiter ✨
           </button>
         )}
       </div>
