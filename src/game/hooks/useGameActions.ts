@@ -51,9 +51,10 @@ export function useGameActions({
       let isCorrect = false
 
       // Determine correctness and update answered set
-      const currentStagesList = stage.gates ?? stage.npcs ?? []
+      const currentStagesList =
+        questionKey.kind === 'gate' ? stage.gates ?? [] : stage.npcs ?? []
       const currentItem = currentStagesList.find(
-        (x: any) => x.id === questionKey.id
+        (x) => x.id === questionKey.id
       )
 
       if (currentItem && pickedIndex === currentItem.question.correctIndex) {

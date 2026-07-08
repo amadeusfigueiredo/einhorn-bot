@@ -26,7 +26,7 @@ export function drawScene(
   drawGates(ctx, stage.gates ?? [], answered)
 
   for (const n of stage.npcs ?? []) {
-    drawNPC(ctx, n.x, n.y, answered.has(n.id), stage, assets, WIDTH, HEIGHT, n)
+    drawNPC(ctx, n.x, n.y, answered.has(n.id), assets, n)
   }
 
   drawPlayer(ctx, player, assets as LoaderImageAssets)

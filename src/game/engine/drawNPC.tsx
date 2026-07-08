@@ -1,4 +1,4 @@
-import type { LoaderImageAssets, NPC, StageConfig } from '../types'
+import type { LoaderImageAssets, NPC } from '../types'
 import { roundRect } from '../utils/roundRect'
 
 export function drawNPC(
@@ -6,18 +6,16 @@ export function drawNPC(
   x: number,
   y: number,
   answeredNpc: boolean,
-  _stage?: StageConfig,
-  assets?: LoaderImageAssets,
-  _canvasW?: number,
-  _canvasH?: number,
-  npc?: NPC | any
+  assets: LoaderImageAssets | undefined,
+  npc: NPC
 ) {
-  const id = npc?.id ?? null
-  const imageKey = npc?.imageKey ?? null
+  const { id, imageKey } = npc
 
   const assetFor = (key?: string | null) => {
     if (!key || !assets) return undefined
-    return (assets as any)[key] as HTMLImageElement | undefined
+    return assets[key as keyof LoaderImageAssets] as
+      | HTMLImageElement
+      | undefined
   }
 
   const BORDER_RADIUS = 12

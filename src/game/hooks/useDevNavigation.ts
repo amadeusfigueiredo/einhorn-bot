@@ -6,6 +6,17 @@ type NavigationHookProps = {
   currentStageIndex: number
 }
 
+/** Clamps a zero-based stage index to the valid [0, total-1] range. */
+export function clampStageIndex(index: number, total: number): number {
+  if (total <= 0) return 0
+  return Math.max(0, Math.min(index, total - 1))
+}
+
+/** Converts a 1-based (human-facing) stage number to a clamped zero-based index. */
+export function oneBasedToStageIndex(oneBased: number, total: number): number {
+  return clampStageIndex(oneBased - 1, total)
+}
+
 export function useDevNavigation({
   setStageIndex,
   currentStageIndex,
@@ -13,17 +24,16 @@ export function useDevNavigation({
   const [jumpInput, setJumpInput] = useState<string>('')
 
   const nextStage = useCallback(() => {
-    setStageIndex(Math.min(currentStageIndex + 1, STAGES.length - 1))
+    setStageIndex(clampStageIndex(currentStageIndex + 1, STAGES.length))
   }, [currentStageIndex, setStageIndex])
 
   const prevStage = useCallback(() => {
-    setStageIndex(Math.max(currentStageIndex - 1, 0))
+    setStageIndex(clampStageIndex(currentStageIndex - 1, STAGES.length))
   }, [currentStageIndex, setStageIndex])
 
   const jumpToStageNumber = useCallback(
     (oneBased: number) => {
-      const idx = Math.max(0, Math.min(oneBased - 1, STAGES.length - 1))
-      setStageIndex(idx)
+      setStageIndex(oneBasedToStageIndex(oneBased, STAGES.length))
     },
     [setStageIndex]
   )
