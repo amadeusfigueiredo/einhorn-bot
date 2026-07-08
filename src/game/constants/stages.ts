@@ -1,4 +1,24 @@
-import type { StageConfig } from '../types'
+import type { StageConfig, NPC } from '../types'
+import { getNpcPosition } from '../utils/npcLayout'
+import { WIDTH, HEIGHT } from './dimensions'
+
+type NpcContent = Omit<NPC, 'x' | 'y'>
+
+// Positions are derived instead of hand-typed so NPCs stay spread across the
+// full canvas (and reachable by the player) regardless of canvas size.
+// `stageSeed` just varies the zig-zag pattern between consecutive stages.
+function layoutStage(stageSeed: number, npcs: NpcContent[]): NPC[] {
+  return npcs.map((npc, index) => ({
+    ...npc,
+    ...getNpcPosition({
+      index,
+      total: npcs.length,
+      stageSeed,
+      width: WIDTH,
+      height: HEIGHT,
+    }),
+  }))
+}
 
 export const STAGES: StageConfig[] = [
   // STUFE 1 - 6 (Original, leicht korrigiert)
@@ -8,12 +28,10 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 4,
     nextStage: 'stage2',
     gates: [],
-    npcs: [
+    npcs: layoutStage(0, [
       {
         id: 'stage1Npc1',
         imageKey: 'stage1Npc1',
-        x: 180,
-        y: 360,
         question: {
           id: 'question1Stage1Npc1',
           prompt: 'Wie viele farbe hat der Regenbogen?',
@@ -24,8 +42,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage1Npc2',
         imageKey: 'stage1Npc2',
-        x: 360,
-        y: 220,
         question: {
           id: 'question2Stage1Npc2',
           prompt: 'Wie viele Tage hat eine Woche?',
@@ -36,8 +52,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage1Npc3',
         imageKey: 'stage1Npc3',
-        x: 620,
-        y: 320,
         question: {
           id: 'question3Stage1Npc3',
           prompt: 'Welche ist die Hauptstadt Deutschlands?',
@@ -48,8 +62,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage1Npc4',
         imageKey: 'stage1Npc4',
-        x: 840,
-        y: 280,
         question: {
           id: 'question4Stage1Npc4',
           prompt: 'In welche Kontinent ist Brasilien?',
@@ -57,7 +69,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 1,
         },
       },
-    ],
+    ]),
   },
   {
     name: 'stage2',
@@ -65,12 +77,10 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 1,
     nextStage: 'stage3',
     gates: [],
-    npcs: [
+    npcs: layoutStage(1, [
       {
         id: 'stage2Npc1',
         imageKey: 'stage2Npc1',
-        x: 220,
-        y: 160,
         question: {
           id: 'stage2Gate2Question',
           prompt:
@@ -79,7 +89,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 0,
         },
       },
-    ],
+    ]),
   },
   {
     name: 'stage3',
@@ -87,12 +97,10 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 1,
     nextStage: 'stage4',
     gates: [],
-    npcs: [
+    npcs: layoutStage(2, [
       {
         id: 'stage3Npc1',
         imageKey: 'stage3Npc1',
-        x: 180,
-        y: 360,
         question: {
           id: 'stage3Npc1Question',
           prompt: 'Was ist klein und hat kein Bein?',
@@ -103,8 +111,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage3Npc2',
         imageKey: 'stage3Npc2',
-        x: 1180,
-        y: 660,
         question: {
           id: 'stage3Npc2Question',
           prompt: 'Was ist blau und hat ein Hau?',
@@ -115,8 +121,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage3Npc3',
         imageKey: 'stage3Npc3',
-        x: 820,
-        y: 560,
         question: {
           id: 'stage3Npc3Question',
           prompt: 'Was ist klein und hat kein Bein?',
@@ -124,7 +128,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 0,
         },
       },
-    ],
+    ]),
   },
   {
     name: 'stage4',
@@ -132,12 +136,10 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 2,
     nextStage: 'stage5',
     gates: [],
-    npcs: [
+    npcs: layoutStage(3, [
       {
         id: 'stage4Npc1',
         imageKey: 'stage4Npc1',
-        x: 140,
-        y: 110,
         question: {
           id: 'stage4Npc1Question',
           prompt: 'WELCHE IST DER KAELTESTE JAHRESZEIT?',
@@ -148,8 +150,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage4Npc2',
         imageKey: 'stage4Npc2',
-        x: 320,
-        y: 110,
         question: {
           id: 'stage4Npc2Question',
           prompt: 'IIST OBST GESUND?',
@@ -160,8 +160,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage4Npc3',
         imageKey: 'stage4Npc3',
-        x: 700,
-        y: 400,
         question: {
           id: 'stage4Npc3Question',
           prompt: 'WIE VIELE STUNDEN HAT EIN TAG?',
@@ -169,7 +167,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 2,
         },
       },
-    ],
+    ]),
   },
   {
     name: 'stage5',
@@ -177,12 +175,10 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 2,
     nextStage: 'stage6',
     gates: [],
-    npcs: [
+    npcs: layoutStage(4, [
       {
         id: 'stage5Npc1',
         imageKey: 'stage5Npc1',
-        x: 122,
-        y: 260,
         question: {
           id: 'stage5Npc1Question',
           prompt: 'MUSS MAN EIN TAMAGOCHI FÜTTERN?',
@@ -193,8 +189,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage5Npc2',
         imageKey: 'stage5Npc2',
-        x: 480,
-        y: 460,
         question: {
           id: 'stage5Npc2Question',
           prompt: 'WAS IST GROSS UND HAT GROSSE ZÄHNE?',
@@ -205,8 +199,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage5Npc3',
         imageKey: 'stage5Npc3',
-        x: 750,
-        y: 150,
         question: {
           id: 'stage5Npc3Question',
           prompt: 'Wofür steht das "i" in Einhörnern?',
@@ -214,7 +206,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 2,
         },
       },
-    ],
+    ]),
   },
   {
     name: 'stage6',
@@ -222,12 +214,10 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 2,
     nextStage: 'stage7',
     gates: [],
-    npcs: [
+    npcs: layoutStage(5, [
       {
         id: 'stage6Npc1',
         imageKey: 'stage6Npc1',
-        x: 180,
-        y: 360,
         question: {
           id: 'stage6Npc1Question',
           prompt: 'WIE VIELE PLANNETEN GIBT ES IM SONNENSYSTEM?',
@@ -238,8 +228,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage6Npc2',
         imageKey: 'stage6Npc2',
-        x: 500,
-        y: 150,
         question: {
           id: 'stage6Npc2Question',
           prompt: 'Wie nennt man Baby-Einhörner?',
@@ -250,8 +238,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage6Npc3',
         imageKey: 'stage6Npc3',
-        x: 800,
-        y: 400,
         question: {
           id: 'stage6Npc3Question',
           prompt: 'Welche Farbe symbolisiert die Hoffnung?',
@@ -259,7 +245,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 1,
         },
       },
-    ],
+    ]),
   },
 
   // STUFE 7 (Ihre ursprüngliche Endstufe, jetzt erweitert)
@@ -269,12 +255,10 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 3,
     nextStage: 'stage8',
     gates: [],
-    npcs: [
+    npcs: layoutStage(6, [
       {
         id: 'stage7Npc1',
         imageKey: 'stage7Npc1',
-        x: 380,
-        y: 360,
         question: {
           id: 'stage7Npc1Question',
           prompt: 'Zum welchen Glitzer wird das Horn sein wenn es einfällt?',
@@ -285,8 +269,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage7Npc2',
         imageKey: 'stage7Npc2',
-        x: 650,
-        y: 200,
         question: {
           id: 'stage7Npc2Question',
           prompt: 'Was hat Ohren, kann aber nicht hören?',
@@ -297,8 +279,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage7Npc3',
         imageKey: 'stage7Npc3',
-        x: 100,
-        y: 100,
         question: {
           id: 'stage7Npc3Question',
           prompt: 'Welches Tier kann menschen helfen?',
@@ -306,7 +286,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 0,
         },
       },
-    ],
+    ]),
   },
 
   // STUFE 8 (Neu)
@@ -316,12 +296,10 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 3,
     nextStage: 'stage9',
     gates: [],
-    npcs: [
+    npcs: layoutStage(7, [
       {
         id: 'stage8Npc1',
         imageKey: 'stage8Npc1',
-        x: 200,
-        y: 400,
         question: {
           id: 'stage8Npc1Question',
           prompt: 'Was ist immer nass?',
@@ -332,8 +310,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage8Npc2',
         imageKey: 'stage8Npc2',
-        x: 500,
-        y: 150,
         question: {
           id: 'stage8Npc2Question',
           prompt: 'Wie viele Beine hat eine Spinne?',
@@ -344,8 +320,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage8Npc3',
         imageKey: 'stage8Npc3',
-        x: 800,
-        y: 250,
         question: {
           id: 'stage8Npc3Question',
           prompt: 'Was macht ein Hund, wenn er sich freut?',
@@ -353,7 +327,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 1,
         },
       },
-    ],
+    ]),
   },
 
   // STUFE 9 (Neu)
@@ -363,12 +337,10 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 3,
     nextStage: 'stage10',
     gates: [],
-    npcs: [
+    npcs: layoutStage(8, [
       {
         id: 'stage9Npc1',
         imageKey: 'stage9Npc1',
-        x: 150,
-        y: 150,
         question: {
           id: 'stage9Npc1Question',
           prompt: 'Welcher Planet ist der Erde am nächsten?',
@@ -379,8 +351,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage9Npc2',
         imageKey: 'stage9Npc2',
-        x: 480,
-        y: 350,
         question: {
           id: 'stage9Npc2Question',
           prompt: 'Was ist die kleinste Einheit der Materie?',
@@ -391,8 +361,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage9Npc3',
         imageKey: 'stage9Npc3',
-        x: 750,
-        y: 450,
         question: {
           id: 'stage9Npc3Question',
           prompt: 'Wie viele Kontinente gibt es auf der Erde?',
@@ -400,7 +368,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 2,
         },
       },
-    ],
+    ]),
   },
 
   // STUFE 10 (Neu)
@@ -410,12 +378,10 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 3,
     nextStage: 'stage11',
     gates: [],
-    npcs: [
+    npcs: layoutStage(9, [
       {
         id: 'stage10Npc1',
         imageKey: 'stage10Npc1',
-        x: 250,
-        y: 250,
         question: {
           id: 'stage10Npc1Question',
           prompt: 'Welche Farbe entsteht aus Blau und Gelb?',
@@ -426,8 +392,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage10Npc2',
         imageKey: 'stage10Npc2',
-        x: 600,
-        y: 400,
         question: {
           id: 'stage10Npc2Question',
           prompt: 'Was ist das Gegenteil von "schnell"?',
@@ -438,8 +402,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage10Npc3',
         imageKey: 'stage10Npc3',
-        x: 80,
-        y: 450,
         question: {
           id: 'stage10Npc3Question',
           prompt: 'Wie nennt man den kleinen Bruder eines Ponys?',
@@ -447,7 +409,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 1,
         },
       },
-    ],
+    ]),
   },
 
   // STUFE 11 (Neu)
@@ -457,12 +419,10 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 3,
     nextStage: 'stage12',
     gates: [],
-    npcs: [
+    npcs: layoutStage(10, [
       {
         id: 'stage11Npc1',
         imageKey: 'stage11Npc1',
-        x: 180,
-        y: 200,
         question: {
           id: 'stage11Npc1Question',
           prompt: 'Welche Form hat ein Ei?',
@@ -473,8 +433,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage11Npc2',
         imageKey: 'stage11Npc2',
-        x: 500,
-        y: 300,
         question: {
           id: 'stage11Npc2Question',
           prompt: 'Was kann man fangen, aber nicht werfen?',
@@ -485,8 +443,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage11Npc3',
         imageKey: 'stage11Npc3',
-        x: 850,
-        y: 450,
         question: {
           id: 'stage11Npc3Question',
           prompt: 'Wann gibt es mehr Sterne: Tag oder Nacht?',
@@ -494,7 +450,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 1,
         },
       },
-    ],
+    ]),
   },
 
   // STUFE 12 (Finale Stufe)
@@ -504,12 +460,10 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 3,
     nextStage: null, // ENDE DES SPIELS
     gates: [],
-    npcs: [
+    npcs: layoutStage(11, [
       {
         id: 'stage12Npc1',
         imageKey: 'stage12Npc1',
-        x: 200,
-        y: 300,
         question: {
           id: 'stage12Npc1Question',
           prompt: 'Was ist größer: ein Elefant oder ein Floh?',
@@ -525,8 +479,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage12Npc2',
         imageKey: 'stage12Npc2',
-        x: 500,
-        y: 400,
         question: {
           id: 'stage12Npc2Question',
           prompt: 'Was hat einen Hals, aber keinen Kopf?',
@@ -537,8 +489,6 @@ export const STAGES: StageConfig[] = [
       {
         id: 'stage12Npc3',
         imageKey: 'stage12Npc3',
-        x: 750,
-        y: 200,
         question: {
           id: 'stage12Npc3Question',
           prompt: 'Was ist das magischste Wort der Welt?',
@@ -546,6 +496,6 @@ export const STAGES: StageConfig[] = [
           correctIndex: 1, // Wir wählen 'Danke' als die netteste Antwort :)
         },
       },
-    ],
+    ]),
   },
 ]

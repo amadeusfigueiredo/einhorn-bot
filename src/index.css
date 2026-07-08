@@ -65,9 +65,19 @@ body {
   padding-bottom: 24px;
 }
 
+.top-bar {
+  width: min(1440px, 98vw);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 18px 8px 4px;
+}
+
 .app-header {
-  text-align: center;
-  padding: 18px 16px 4px;
+  text-align: left;
+  padding: 0;
 }
 
 .app-title {
@@ -119,24 +129,85 @@ body {
   background: #1a1330;
 }
 
-.dev-nav-panel {
+.stage-selector-panel {
   font-family: 'Fredoka', system-ui, sans-serif;
   background: linear-gradient(160deg, #fff7fd 0%, #f6e6ff 100%);
   border: 2px solid rgba(138, 92, 246, 0.35);
+  border-radius: 14px;
+  padding: 8px 14px;
+  box-shadow: 0 4px 14px rgba(138, 92, 246, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 200px;
+  text-align: center;
+  flex-shrink: 0;
 }
 
-.dev-nav-panel button {
+.stage-selector-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--unicorn-violet-deep);
+}
+
+.stage-selector-row {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.stage-selector-btn {
   font-family: inherit;
   font-weight: 600;
+  font-size: 12px;
   border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
   background: linear-gradient(135deg, var(--unicorn-violet), var(--unicorn-pink-hot));
   color: #fff;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
-.dev-nav-panel button:hover {
+.stage-selector-btn:hover {
   transform: translateY(-1px) scale(1.04);
   box-shadow: 0 4px 10px rgba(138, 92, 246, 0.4);
+}
+
+.stage-selector-input {
+  padding: 6px;
+  width: 80px;
+  border-radius: 8px;
+  border: 1px solid rgba(138, 92, 246, 0.35);
+  font-family: inherit;
+}
+
+.stage-selector-current {
+  font-size: 12px;
+  color: var(--unicorn-violet-deep);
+  opacity: 0.85;
+}
+
+.sound-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 999;
+  padding: 6px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  background: linear-gradient(135deg, #ff8ad4, #ffd166);
+  color: #5a3a86;
+  font-weight: 600;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  box-shadow: 0 2px 8px rgba(138, 92, 246, 0.3);
+  transition: transform 0.12s ease;
+}
+
+.sound-button:hover {
+  transform: translateY(-1px) scale(1.05);
 }
 
 .choice-btn {
@@ -147,8 +218,4 @@ body {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 6px 16px rgba(138, 92, 246, 0.3) !important;
   border-color: var(--unicorn-pink-hot) !important;
-}
-
-.sparkle-btn:hover {
-  transform: translateY(-2px) scale(1.05);
 }

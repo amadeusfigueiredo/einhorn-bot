@@ -1,5 +1,6 @@
 import type { UpdateParams } from '../types'
-import { rectsOverlap, dist } from '../utils/collision'
+import { rectsOverlap, dist, clamp } from '../utils/collision'
+import { WIDTH, HEIGHT } from '../constants/dimensions'
 
 export function updateGame(params: UpdateParams) {
   const { dt, keys, player, stage, answered, onTrigger } = params
@@ -12,14 +13,8 @@ export function updateGame(params: UpdateParams) {
   const vx = (right ? 1 : 0) - (left ? 1 : 0)
   const vy = (down ? 1 : 0) - (up ? 1 : 0)
 
-  player.x = Math.max(
-    0,
-    Math.min(player.x + vx * player.speed * dt, 960 - player.w)
-  )
-  player.y = Math.max(
-    0,
-    Math.min(player.y + vy * player.speed * dt, 540 - player.h)
-  )
+  player.x = clamp(player.x + vx * player.speed * dt, 0, WIDTH - player.w)
+  player.y = clamp(player.y + vy * player.speed * dt, 0, HEIGHT - player.h)
 
   // Only trigger when not already answered.
   // 1) Gate contact triggers immediately
