@@ -23,40 +23,44 @@ export default function StageSelector({
 }: StageSelectorProps) {
   return (
     <div className="stage-selector-panel">
-      <div className="stage-selector-title">✨ Stufe wählen</div>
+      <span className="stage-selector-title">✨ Stufe</span>
 
-      <div className="stage-selector-row">
-        <button onClick={prevStage} className="stage-selector-btn">
-          ◀ Prev
-        </button>
+      <button
+        onClick={prevStage}
+        className="stage-selector-btn"
+        aria-label="Vorherige Stufe"
+      >
+        ◀
+      </button>
 
-        <button onClick={nextStage} className="stage-selector-btn">
-          Next ▶
-        </button>
-      </div>
-
-      <div className="stage-selector-row">
-        <input
-          type='number'
-          min={1}
-          max={totalStages}
-          value={jumpInput}
-          onChange={(e) => setJumpInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') handleJumpSubmit()
-          }}
-          placeholder='Stufe #'
-          className="stage-selector-input"
-        />
-
-        <button onClick={handleJumpSubmit} className="stage-selector-btn">
-          Los!
-        </button>
-      </div>
-
-      <div className="stage-selector-current">
+      <span className="stage-selector-current">
         {`${stageIndex + 1} / ${totalStages} — ${stage?.name ?? ''}`}
-      </div>
+      </span>
+
+      <button
+        onClick={nextStage}
+        className="stage-selector-btn"
+        aria-label="Nächste Stufe"
+      >
+        ▶
+      </button>
+
+      <input
+        type='number'
+        min={1}
+        max={totalStages}
+        value={jumpInput}
+        onChange={(e) => setJumpInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleJumpSubmit()
+        }}
+        placeholder='Stufe #'
+        className="stage-selector-input"
+      />
+
+      <button onClick={handleJumpSubmit} className="stage-selector-btn">
+        Los!
+      </button>
     </div>
   )
 }
