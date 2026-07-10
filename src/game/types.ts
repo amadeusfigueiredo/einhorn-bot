@@ -151,6 +151,11 @@ export type MoveTarget = {
   onArrive?: () => void
 }
 
+export type PlayerMotion = {
+  moving: boolean
+  facingLeft: boolean
+}
+
 export type UpdateParams = {
   dt: number
   keys: Keys
@@ -160,4 +165,6 @@ export type UpdateParams = {
   onTrigger: (kind: 'gate' | 'npc', id: string) => void
   /** Click/tap-to-move target. Any manual key input cancels it. */
   moveTargetRef?: { current: MoveTarget | null }
+  /** Updated in place each frame so the renderer can animate the sprite. */
+  motionRef?: { current: PlayerMotion }
 }

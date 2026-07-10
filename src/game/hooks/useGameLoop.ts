@@ -1,7 +1,13 @@
 import { useEffect, useRef } from 'react'
 import { updateGame } from '../engine/update'
 import { drawScene } from '../engine/drawScene'
-import type { Keys, LoaderImageAssets, MoveTarget, Player } from '../types'
+import type {
+  Keys,
+  LoaderImageAssets,
+  MoveTarget,
+  Player,
+  PlayerMotion,
+} from '../types'
 import type { StageConfig } from '../types'
 
 type Params = {
@@ -12,6 +18,8 @@ type Params = {
   answeredRef: React.MutableRefObject<Set<string>>
   assetsRef: React.RefObject<LoaderImageAssets | null>
   moveTargetRef: React.MutableRefObject<MoveTarget | null>
+  motionRef: React.MutableRefObject<PlayerMotion>
+  hoveredNpcRef: React.MutableRefObject<string | null>
   questionKey: { kind: 'gate' | 'npc'; id: string } | null
   onTrigger: (kind: 'gate' | 'npc', id: string) => void
   deps?: unknown[] // extra deps to control effect
@@ -25,6 +33,8 @@ export default function useGameLoop({
   answeredRef,
   assetsRef,
   moveTargetRef,
+  motionRef,
+  hoveredNpcRef,
   questionKey,
   onTrigger,
   deps = [],
@@ -38,7 +48,8 @@ export default function useGameLoop({
     if (!ctx) return
 
     let raf = 0
-    lastRef.current = performance.now()
+    const startTime = performance.now()
+    lastRef.current = startTime
 
     function step(t: number) {
       const last = lastRef.current ?? t
@@ -55,6 +66,7 @@ export default function useGameLoop({
           answered: answeredRef.current,
           onTrigger,
           moveTargetRef,
+          motionRef,
         })
       }
 
@@ -64,7 +76,12 @@ export default function useGameLoop({
         stage,
         playerRef.current,
         answeredRef.current,
-        assetsRef.current ?? undefined
+        assetsRef.current ?? undefined,
+        {
+          t: (t - startTime) / 1000,
+          motion: motionRef.current,
+          hoveredNpcId: hoveredNpcRef.current,
+        }
       )
 
       raf = requestAnimationFrame(step)

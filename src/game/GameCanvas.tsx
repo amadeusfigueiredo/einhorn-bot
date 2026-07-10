@@ -12,13 +12,19 @@ import useGameLoop from './hooks/useGameLoop'
 import useAudioManager from './hooks/useAudio'
 import { useGameActions } from './hooks/useGameActions'
 import { loadImageAssets, loadAudioAssets } from './utils/loader'
-import type { LoaderAudioAssets, LoaderImageAssets, MoveTarget } from './types'
+import type {
+  LoaderAudioAssets,
+  LoaderImageAssets,
+  MoveTarget,
+  PlayerMotion,
+} from './types'
 import type { StageConfig, Player } from './types'
 import { type PopupConfig } from './config/PopupsConfig'
 import PopupOverlay from './PopupOverlay'
 import { HEIGHT, WIDTH } from './constants/dimensions'
 import { getActivePrompt } from './utils/getActivePrompt'
 import { findNpcAtPoint } from './utils/hitTest'
+import { computePlayerSize } from './utils/playerSize'
 import { SoundButton } from './components/SoundButton'
 import { MoveControls } from './components/MoveControls'
 
@@ -49,6 +55,8 @@ export default function GameCanvas({
   const assetsRef = useRef<LoaderImageAssets | null>(null)
   const audioRef = useRef<LoaderAudioAssets | null>(null)
   const moveTargetRef = useRef<MoveTarget | null>(null)
+  const motionRef = useRef<PlayerMotion>({ moving: false, facingLeft: false })
+  const hoveredNpcRef = useRef<string | null>(null)
   const [assetsLoaded, setAssetsLoaded] = useState(false)
 
   useEffect(() => {
@@ -64,9 +72,9 @@ export default function GameCanvas({
         if (cancelled) return
         assetsRef.current = imgs
         if (imgs.player1) {
-          const img = imgs.player1
-          playerRef.current.w = Math.round(img.width / 4)
-          playerRef.current.h = Math.round(img.height / 4)
+          const { w, h } = computePlayerSize(imgs.player1)
+          playerRef.current.w = w
+          playerRef.current.h = h
         }
         audioRef.current = loadAudioAssets()
         setAssetsLoaded(true)
@@ -103,23 +111,37 @@ export default function GameCanvas({
     answeredRef,
     assetsRef,
     moveTargetRef,
+    motionRef,
+    hoveredNpcRef,
     questionKey,
     onTrigger,
     deps: [stageIndex],
   })
 
+  const canvasPointToGameSpace = useCallback((e: PointerEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current
+    if (!canvas) return null
+    const rect = canvas.getBoundingClientRect()
+    return {
+      x: ((e.clientX - rect.left) / rect.width) * WIDTH,
+      y: ((e.clientY - rect.top) / rect.height) * HEIGHT,
+    }
+  }, [])
+
   // Click/tap on the canvas: walk to an NPC (and auto-open its question on
   // arrival) or just walk to the tapped spot. Keyboard/D-pad input cancels it.
   const handleCanvasPointerDown = useCallback(
     (e: PointerEvent<HTMLCanvasElement>) => {
-      const canvas = canvasRef.current
-      if (!canvas || questionKey || activePopupConfig) return
+      if (questionKey || activePopupConfig) return
+      const point = canvasPointToGameSpace(e)
+      if (!point) return
 
-      const rect = canvas.getBoundingClientRect()
-      const x = ((e.clientX - rect.left) / rect.width) * WIDTH
-      const y = ((e.clientY - rect.top) / rect.height) * HEIGHT
-
-      const npc = findNpcAtPoint(stage.npcs ?? [], x, y, answeredRef.current)
+      const npc = findNpcAtPoint(
+        stage.npcs ?? [],
+        point.x,
+        point.y,
+        answeredRef.current
+      )
 
       moveTargetRef.current = npc
         ? {
@@ -128,10 +150,28 @@ export default function GameCanvas({
             radius: npc.talkRadius ?? 80,
             onArrive: () => onTrigger('npc', npc.id),
           }
-        : { x, y }
+        : point
     },
-    [stage, questionKey, activePopupConfig, onTrigger]
+    [stage, questionKey, activePopupConfig, onTrigger, canvasPointToGameSpace]
   )
+
+  // Desktop-only hover highlight: touch devices don't have real hover, so we
+  // only track it for mouse pointers.
+  const handleCanvasPointerMove = useCallback(
+    (e: PointerEvent<HTMLCanvasElement>) => {
+      if (e.pointerType !== 'mouse') return
+      const point = canvasPointToGameSpace(e)
+      const npc = point
+        ? findNpcAtPoint(stage.npcs ?? [], point.x, point.y, answeredRef.current)
+        : undefined
+      hoveredNpcRef.current = npc?.id ?? null
+    },
+    [stage, canvasPointToGameSpace]
+  )
+
+  const handleCanvasPointerLeave = useCallback(() => {
+    hoveredNpcRef.current = null
+  }, [])
 
   const { resolveQuestion } = useGameActions({
     stage,
@@ -165,6 +205,8 @@ export default function GameCanvas({
         width={WIDTH}
         height={HEIGHT}
         onPointerDown={handleCanvasPointerDown}
+        onPointerMove={handleCanvasPointerMove}
+        onPointerLeave={handleCanvasPointerLeave}
       />
       <MoveControls keysRef={keysRef} moveTargetRef={moveTargetRef} />
       {activePrompt && (

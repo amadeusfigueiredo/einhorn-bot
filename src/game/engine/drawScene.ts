@@ -1,4 +1,9 @@
-import type { LoaderImageAssets, StageConfig, Player } from '../types'
+import type {
+  LoaderImageAssets,
+  StageConfig,
+  Player,
+  PlayerMotion,
+} from '../types'
 import { drawGates } from '../renderer'
 import { drawNPC } from '../engine/drawNPC'
 import { drawHUD } from '../utils/drawHUD'
@@ -7,12 +12,21 @@ import { drawPlayer } from '../utils/drawPlayer'
 import { HEIGHT, WIDTH } from '../constants/dimensions'
 import { roundRect } from '../utils/roundRect'
 
+export type DrawSceneOptions = {
+  /** Elapsed seconds, drives idle/walk/hover/selected animations. */
+  t: number
+  motion?: PlayerMotion
+  /** NPC currently under the mouse cursor (desktop hover only). */
+  hoveredNpcId?: string | null
+}
+
 export function drawScene(
   ctx: CanvasRenderingContext2D,
   stage: StageConfig,
   player: Player,
   answered: Set<string>,
-  assets: LoaderImageAssets | undefined
+  assets: LoaderImageAssets | undefined,
+  options: DrawSceneOptions = { t: 0 }
 ) {
   ctx.clearRect(0, 0, WIDTH, HEIGHT)
   drawBackground(
@@ -25,16 +39,6 @@ export function drawScene(
 
   drawGates(ctx, stage.gates ?? [], answered)
 
-  for (const n of stage.npcs ?? []) {
-    drawNPC(ctx, n.x, n.y, answered.has(n.id), assets, n)
-  }
-
-  drawPlayer(ctx, player, assets as LoaderImageAssets)
-
-  const total = (stage.gates ?? []).length + (stage.npcs ?? []).length
-  const req = stage.requiredToAdvance ?? total
-  drawHUD(ctx, stage.name, answered.size, req, total)
-
   const cx = player.x + player.w / 2
   const cy = player.y + player.h / 2
   const nearNpc = (stage.npcs ?? []).find(
@@ -42,6 +46,25 @@ export function drawScene(
       !answered.has(n.id) &&
       Math.hypot(cx - n.x, cy - n.y) <= (n.talkRadius ?? 80)
   )
+
+  for (const n of stage.npcs ?? []) {
+    drawNPC(ctx, n.x, n.y, answered.has(n.id), assets, n, {
+      t: options.t,
+      isSelected: nearNpc?.id === n.id,
+      isHovered: options.hoveredNpcId === n.id,
+    })
+  }
+
+  drawPlayer(ctx, player, assets as LoaderImageAssets, {
+    t: options.t,
+    moving: options.motion?.moving ?? false,
+    facingLeft: options.motion?.facingLeft ?? false,
+  })
+
+  const total = (stage.gates ?? []).length + (stage.npcs ?? []).length
+  const req = stage.requiredToAdvance ?? total
+  drawHUD(ctx, stage.name, answered.size, req, total)
+
   if (nearNpc) {
     // --- Helper Function (Required for Rounded Corners) ---
 

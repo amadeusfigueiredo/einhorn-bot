@@ -1,10 +1,14 @@
 import { describe, expect, it, vi } from 'vitest'
 import { updateGame } from './update'
 import { WIDTH, HEIGHT } from '../constants/dimensions'
-import type { MoveTarget, Player, StageConfig } from '../types'
+import type { MoveTarget, Player, PlayerMotion, StageConfig } from '../types'
 
 function makePlayer(overrides: Partial<Player> = {}): Player {
   return { x: 100, y: 100, w: 56, h: 56, speed: 200, ...overrides }
+}
+
+function makeMotionRef(overrides: Partial<PlayerMotion> = {}) {
+  return { current: { moving: false, facingLeft: false, ...overrides } }
 }
 
 const emptyStage: StageConfig = { name: 'stage1', gates: [], npcs: [] }
@@ -271,5 +275,105 @@ describe('updateGame click-to-move (moveTargetRef)', () => {
     })
     expect(player.x).toBe(100)
     expect(player.y).toBe(100)
+  })
+})
+
+describe('updateGame motionRef (for sprite animation)', () => {
+  it('reports moving=false and no key input', () => {
+    const player = makePlayer()
+    const motionRef = makeMotionRef()
+    updateGame({
+      dt: 0.1,
+      keys: {},
+      player,
+      stage: emptyStage,
+      answered: new Set(),
+      onTrigger: vi.fn(),
+      motionRef,
+    })
+    expect(motionRef.current.moving).toBe(false)
+  })
+
+  it('reports moving=true and faces right on ArrowRight', () => {
+    const player = makePlayer()
+    const motionRef = makeMotionRef({ facingLeft: true })
+    updateGame({
+      dt: 0.1,
+      keys: { arrowright: true },
+      player,
+      stage: emptyStage,
+      answered: new Set(),
+      onTrigger: vi.fn(),
+      motionRef,
+    })
+    expect(motionRef.current.moving).toBe(true)
+    expect(motionRef.current.facingLeft).toBe(false)
+  })
+
+  it('reports moving=true and faces left on ArrowLeft', () => {
+    const player = makePlayer()
+    const motionRef = makeMotionRef({ facingLeft: false })
+    updateGame({
+      dt: 0.1,
+      keys: { arrowleft: true },
+      player,
+      stage: emptyStage,
+      answered: new Set(),
+      onTrigger: vi.fn(),
+      motionRef,
+    })
+    expect(motionRef.current.moving).toBe(true)
+    expect(motionRef.current.facingLeft).toBe(true)
+  })
+
+  it('keeps the last facing direction while moving only vertically', () => {
+    const player = makePlayer()
+    const motionRef = makeMotionRef({ facingLeft: true })
+    updateGame({
+      dt: 0.1,
+      keys: { arrowdown: true },
+      player,
+      stage: emptyStage,
+      answered: new Set(),
+      onTrigger: vi.fn(),
+      motionRef,
+    })
+    expect(motionRef.current.moving).toBe(true)
+    expect(motionRef.current.facingLeft).toBe(true)
+  })
+
+  it('reports moving=true while walking toward a click-to-move target', () => {
+    const player = makePlayer({ x: 100, y: 100 })
+    const motionRef = makeMotionRef()
+    const moveTargetRef = { current: { x: 500, y: 128 } as MoveTarget | null }
+    updateGame({
+      dt: 0.1,
+      keys: {},
+      player,
+      stage: emptyStage,
+      answered: new Set(),
+      onTrigger: vi.fn(),
+      moveTargetRef,
+      motionRef,
+    })
+    expect(motionRef.current.moving).toBe(true)
+    expect(motionRef.current.facingLeft).toBe(false) // target is to the right
+  })
+
+  it('reports moving=false the instant it arrives at a click-to-move target', () => {
+    const player = makePlayer({ x: 100, y: 100, w: 56, h: 56 })
+    const motionRef = makeMotionRef({ moving: true })
+    const moveTargetRef = { current: { x: 128, y: 128, radius: 10 } as MoveTarget | null }
+    updateGame({
+      dt: 0.016,
+      keys: {},
+      player,
+      stage: emptyStage,
+      answered: new Set(),
+      onTrigger: vi.fn(),
+      moveTargetRef,
+      motionRef,
+    })
+    expect(motionRef.current.moving).toBe(false)
   })
 })
