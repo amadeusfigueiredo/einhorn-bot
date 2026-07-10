@@ -25,6 +25,7 @@ import { HEIGHT, WIDTH } from './constants/dimensions'
 import { getActivePrompt } from './utils/getActivePrompt'
 import { findNpcAtPoint } from './utils/hitTest'
 import { computePlayerSize } from './utils/playerSize'
+import { saveProgress } from './utils/progressStorage'
 import { SoundButton } from './components/SoundButton'
 import { MoveControls } from './components/MoveControls'
 
@@ -32,17 +33,20 @@ type GameCanvasProps = {
   stage: StageConfig
   stageIndex: number
   setStageIndex: (index: number) => void
+  /** NPCs already answered in this stage, restored from a previous session. */
+  initialAnsweredIds: string[]
 }
 
 export default function GameCanvas({
   stage,
   stageIndex,
   setStageIndex,
+  initialAnsweredIds,
 }: GameCanvasProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const keysRef = useKeys()
 
-  const answeredRef = useRef(new Set<string>())
+  const answeredRef = useRef(new Set<string>(initialAnsweredIds))
   const [questionKey, setQuestionKey] = useState<{
     kind: 'gate' | 'npc'
     id: string
@@ -59,9 +63,20 @@ export default function GameCanvas({
   const hoveredNpcRef = useRef<string | null>(null)
   const [assetsLoaded, setAssetsLoaded] = useState(false)
 
+  // Only react to a *real* stageIndex change, not the initial mount: on
+  // mount, stageIndex/answeredRef already hold whatever we just restored
+  // from storage, and clearing them here would wipe out that progress.
+  // (A plain "have we mounted yet" boolean isn't enough - React's dev
+  // StrictMode intentionally re-runs the mount effect once, which would
+  // flip that boolean and wipe the restored progress on the replay.)
+  const lastHandledStageIndexRef = useRef(stageIndex)
   useEffect(() => {
+    if (lastHandledStageIndexRef.current === stageIndex) return
+    lastHandledStageIndexRef.current = stageIndex
+
     answeredRef.current.clear()
     moveTargetRef.current = null
+    saveProgress(window.localStorage, { stageIndex, answeredIds: [] })
   }, [stageIndex])
 
   // load assets

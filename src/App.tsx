@@ -8,6 +8,7 @@ export default function App() {
     stage,
     stageIndex,
     setStageIndex,
+    initialAnsweredIds,
     jumpInput,
     setJumpInput,
     handleJumpSubmit,
@@ -31,7 +32,12 @@ export default function App() {
           prevStage={prevStage}
         />
       </div>
-      <GameCanvas stage={stage} stageIndex={stageIndex} setStageIndex={setStageIndex} />
+      <GameCanvas
+        stage={stage}
+        stageIndex={stageIndex}
+        setStageIndex={setStageIndex}
+        initialAnsweredIds={initialAnsweredIds}
+      />
     </div>
   )
 }
