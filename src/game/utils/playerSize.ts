@@ -1,13 +1,18 @@
-// The old size (image dimensions / 4) read as a small, easy-to-lose sprite.
-// A bigger scale reads better on both desktop and small mobile screens.
-const SIZE_DIVISOR = 3
+import { getNpcMaxDisplayWidth } from './npcDisplaySize'
 
-export function computePlayerSize(image: { width: number; height: number }): {
+// The player reads as "the odd one out" if it doesn't match the NPCs it
+// stands next to, so it's capped to the exact same size as them (bigger on
+// portrait/mobile, same as everyone else).
+export function computePlayerSize(
+  image: { width: number; height: number },
+  canvasWidth: number,
+  canvasHeight: number
+): {
   w: number
   h: number
 } {
-  return {
-    w: Math.round(image.width / SIZE_DIVISOR),
-    h: Math.round(image.height / SIZE_DIVISOR),
-  }
+  const cap = getNpcMaxDisplayWidth(canvasWidth, canvasHeight)
+  const w = Math.min(cap, image.width)
+  const h = Math.round((image.height / image.width) * w)
+  return { w, h }
 }

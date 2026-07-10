@@ -283,6 +283,7 @@ body {
   animation-name: confetti-fall;
   animation-timing-function: ease-in;
   animation-fill-mode: forwards;
+  animation-iteration-count: 2;
 }
 
 @keyframes confetti-fall {

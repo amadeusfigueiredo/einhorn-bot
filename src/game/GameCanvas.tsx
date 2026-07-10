@@ -90,11 +90,6 @@ export default function GameCanvas({
       .then((imgs) => {
         if (cancelled) return
         assetsRef.current = imgs
-        if (imgs.player1) {
-          const { w, h } = computePlayerSize(imgs.player1)
-          playerRef.current.w = w
-          playerRef.current.h = h
-        }
         audioRef.current = loadAudioAssets()
         setAssetsLoaded(true)
       })
@@ -103,6 +98,17 @@ export default function GameCanvas({
       cancelled = true
     }
   }, [])
+
+  // Keep the player capped at the same size as the NPCs - recomputed
+  // whenever the canvas size changes (e.g. rotating the phone), not just once
+  // on load.
+  useEffect(() => {
+    const img = assetsRef.current?.player1
+    if (!img) return
+    const { w, h } = computePlayerSize(img, canvasWidth, canvasHeight)
+    playerRef.current.w = w
+    playerRef.current.h = h
+  }, [assetsLoaded, canvasWidth, canvasHeight])
 
   const { enableAudioNow } = useAudioManager({
     audioRef,

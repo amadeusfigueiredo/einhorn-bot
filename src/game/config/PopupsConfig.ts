@@ -13,7 +13,7 @@ export const POPUP_CONFIGS: Record<PopupConfig['id'], PopupConfig> = {
   WIN: {
     id: 'WIN',
     imageKey: 'winPopup', // Image for correct answer
-    durationMs: 9000, // 9 seconds - let the celebration breathe
+    durationMs: 4000, // 4 seconds - quick celebration, not a wait
     fallbackText: '✨ Richtig! Fantastisch, weiter so! ✨',
   },
   TRY_AGAIN: {
