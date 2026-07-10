@@ -127,6 +127,68 @@ body {
   display: block;
   border-radius: 20px;
   background: #1a1330;
+  max-width: 100%;
+  height: auto;
+  touch-action: none;
+  cursor: pointer;
+}
+
+.move-controls {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 998;
+  display: grid;
+  grid-template-columns: 48px 48px 48px;
+  grid-template-rows: 48px 48px 48px;
+  grid-template-areas:
+    '.    up    .'
+    'left .     right'
+    '.    down  .';
+  gap: 6px;
+  touch-action: none;
+  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .move-controls {
+    grid-template-columns: 56px 56px 56px;
+    grid-template-rows: 56px 56px 56px;
+  }
+}
+
+.move-btn {
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(145deg, var(--unicorn-violet), var(--unicorn-pink-hot));
+  color: #fff;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(138, 92, 246, 0.45);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.move-btn:active {
+  transform: scale(0.9);
+  box-shadow: 0 2px 4px rgba(138, 92, 246, 0.45);
+}
+
+.move-btn-up {
+  grid-area: up;
+}
+.move-btn-left {
+  grid-area: left;
+}
+.move-btn-down {
+  grid-area: down;
+}
+.move-btn-right {
+  grid-area: right;
 }
 
 .stage-selector-panel {

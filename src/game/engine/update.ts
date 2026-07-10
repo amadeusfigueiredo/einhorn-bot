@@ -2,19 +2,53 @@ import type { UpdateParams } from '../types'
 import { rectsOverlap, dist, clamp } from '../utils/collision'
 import { WIDTH, HEIGHT } from '../constants/dimensions'
 
+const DEFAULT_ARRIVE_RADIUS = 10
+
 export function updateGame(params: UpdateParams) {
-  const { dt, keys, player, stage, answered, onTrigger } = params
+  const { dt, keys, player, stage, answered, onTrigger, moveTargetRef } =
+    params
 
   const left = keys['arrowleft'] || keys['a']
   const right = keys['arrowright'] || keys['d']
   const up = keys['arrowup'] || keys['w']
   const down = keys['arrowdown'] || keys['s']
+  const manualInput = left || right || up || down
 
-  const vx = (right ? 1 : 0) - (left ? 1 : 0)
-  const vy = (down ? 1 : 0) - (up ? 1 : 0)
+  if (manualInput) {
+    // Keyboard/D-pad input always wins over an in-progress click-to-move.
+    if (moveTargetRef) moveTargetRef.current = null
 
-  player.x = clamp(player.x + vx * player.speed * dt, 0, WIDTH - player.w)
-  player.y = clamp(player.y + vy * player.speed * dt, 0, HEIGHT - player.h)
+    const vx = (right ? 1 : 0) - (left ? 1 : 0)
+    const vy = (down ? 1 : 0) - (up ? 1 : 0)
+
+    player.x = clamp(player.x + vx * player.speed * dt, 0, WIDTH - player.w)
+    player.y = clamp(player.y + vy * player.speed * dt, 0, HEIGHT - player.h)
+  } else if (moveTargetRef?.current) {
+    const target = moveTargetRef.current
+    const cx = player.x + player.w / 2
+    const cy = player.y + player.h / 2
+    const dx = target.x - cx
+    const dy = target.y - cy
+    const distanceToTarget = Math.hypot(dx, dy)
+    const arriveRadius = target.radius ?? DEFAULT_ARRIVE_RADIUS
+
+    if (distanceToTarget <= arriveRadius) {
+      moveTargetRef.current = null
+      target.onArrive?.()
+    } else {
+      const step = Math.min(distanceToTarget, player.speed * dt)
+      player.x = clamp(
+        player.x + (dx / distanceToTarget) * step,
+        0,
+        WIDTH - player.w
+      )
+      player.y = clamp(
+        player.y + (dy / distanceToTarget) * step,
+        0,
+        HEIGHT - player.h
+      )
+    }
+  }
 
   // Only trigger when not already answered.
   // 1) Gate contact triggers immediately

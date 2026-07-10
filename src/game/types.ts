@@ -142,6 +142,15 @@ export type Player = {
   speed: number
 }
 
+export type MoveTarget = {
+  x: number
+  y: number
+  /** How close the player must get before this counts as "arrived". */
+  radius?: number
+  /** Called once, when the player arrives (e.g. open an NPC's question). */
+  onArrive?: () => void
+}
+
 export type UpdateParams = {
   dt: number
   keys: Keys
@@ -149,4 +158,6 @@ export type UpdateParams = {
   stage: StageConfig
   answered: Set<string>
   onTrigger: (kind: 'gate' | 'npc', id: string) => void
+  /** Click/tap-to-move target. Any manual key input cancels it. */
+  moveTargetRef?: { current: MoveTarget | null }
 }

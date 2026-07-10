@@ -1,17 +1,26 @@
-import { useEffect, useRef, useState, useCallback, type JSX } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  type JSX,
+  type PointerEvent,
+} from 'react'
 import QuestionOverlay from './QuestionOverlay'
 import useKeys from './hooks/useKeys'
 import useGameLoop from './hooks/useGameLoop'
 import useAudioManager from './hooks/useAudio'
 import { useGameActions } from './hooks/useGameActions'
 import { loadImageAssets, loadAudioAssets } from './utils/loader'
-import type { LoaderAudioAssets, LoaderImageAssets } from './types'
+import type { LoaderAudioAssets, LoaderImageAssets, MoveTarget } from './types'
 import type { StageConfig, Player } from './types'
 import { type PopupConfig } from './config/PopupsConfig'
 import PopupOverlay from './PopupOverlay'
 import { HEIGHT, WIDTH } from './constants/dimensions'
 import { getActivePrompt } from './utils/getActivePrompt'
+import { findNpcAtPoint } from './utils/hitTest'
 import { SoundButton } from './components/SoundButton'
+import { MoveControls } from './components/MoveControls'
 
 type GameCanvasProps = {
   stage: StageConfig
@@ -39,10 +48,12 @@ export default function GameCanvas({
   const playerRef = useRef<Player>({ x: 60, y: 320, w: 56, h: 56, speed: 210 })
   const assetsRef = useRef<LoaderImageAssets | null>(null)
   const audioRef = useRef<LoaderAudioAssets | null>(null)
+  const moveTargetRef = useRef<MoveTarget | null>(null)
   const [assetsLoaded, setAssetsLoaded] = useState(false)
 
   useEffect(() => {
     answeredRef.current.clear()
+    moveTargetRef.current = null
   }, [stageIndex])
 
   // load assets
@@ -91,10 +102,36 @@ export default function GameCanvas({
     playerRef,
     answeredRef,
     assetsRef,
+    moveTargetRef,
     questionKey,
     onTrigger,
     deps: [stageIndex],
   })
+
+  // Click/tap on the canvas: walk to an NPC (and auto-open its question on
+  // arrival) or just walk to the tapped spot. Keyboard/D-pad input cancels it.
+  const handleCanvasPointerDown = useCallback(
+    (e: PointerEvent<HTMLCanvasElement>) => {
+      const canvas = canvasRef.current
+      if (!canvas || questionKey || activePopupConfig) return
+
+      const rect = canvas.getBoundingClientRect()
+      const x = ((e.clientX - rect.left) / rect.width) * WIDTH
+      const y = ((e.clientY - rect.top) / rect.height) * HEIGHT
+
+      const npc = findNpcAtPoint(stage.npcs ?? [], x, y, answeredRef.current)
+
+      moveTargetRef.current = npc
+        ? {
+            x: npc.x,
+            y: npc.y,
+            radius: npc.talkRadius ?? 80,
+            onArrive: () => onTrigger('npc', npc.id),
+          }
+        : { x, y }
+    },
+    [stage, questionKey, activePopupConfig, onTrigger]
+  )
 
   const { resolveQuestion } = useGameActions({
     stage,
@@ -123,7 +160,13 @@ export default function GameCanvas({
       }}
     >
       <SoundButton onClick={enableAudioNow} />
-      <canvas ref={canvasRef} width={WIDTH} height={HEIGHT} />
+      <canvas
+        ref={canvasRef}
+        width={WIDTH}
+        height={HEIGHT}
+        onPointerDown={handleCanvasPointerDown}
+      />
+      <MoveControls keysRef={keysRef} moveTargetRef={moveTargetRef} />
       {activePrompt && (
         <QuestionOverlay
           prompt={activePrompt.prompt}

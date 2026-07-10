@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { updateGame } from './update'
 import { WIDTH, HEIGHT } from '../constants/dimensions'
-import type { Player, StageConfig } from '../types'
+import type { MoveTarget, Player, StageConfig } from '../types'
 
 function makePlayer(overrides: Partial<Player> = {}): Player {
   return { x: 100, y: 100, w: 56, h: 56, speed: 200, ...overrides }
@@ -170,5 +170,106 @@ describe('updateGame npc triggers', () => {
       onTrigger,
     })
     expect(onTrigger).not.toHaveBeenCalled()
+  })
+})
+
+describe('updateGame click-to-move (moveTargetRef)', () => {
+  it('walks the player toward the target', () => {
+    const player = makePlayer({ x: 100, y: 100, speed: 200 })
+    const moveTargetRef = { current: { x: 300, y: 100 } as MoveTarget | null }
+    updateGame({
+      dt: 0.5, // covers 100px at speed 200
+      keys: {},
+      player,
+      stage: emptyStage,
+      answered: new Set(),
+      onTrigger: vi.fn(),
+      moveTargetRef,
+    })
+    // player center starts at 128,128; target at 300,100 -> should move closer
+    expect(player.x).toBeGreaterThan(100)
+    expect(moveTargetRef.current).not.toBeNull()
+  })
+
+  it('arrives, clears the target, and calls onArrive once within the radius', () => {
+    const player = makePlayer({ x: 100, y: 100, w: 56, h: 56 })
+    const onArrive = vi.fn()
+    const moveTargetRef = {
+      current: { x: 128, y: 128, radius: 10, onArrive } as MoveTarget | null,
+    }
+    updateGame({
+      dt: 0.016,
+      keys: {},
+      player,
+      stage: emptyStage,
+      answered: new Set(),
+      onTrigger: vi.fn(),
+      moveTargetRef,
+    })
+    expect(onArrive).toHaveBeenCalledTimes(1)
+    expect(moveTargetRef.current).toBeNull()
+  })
+
+  it('does not overshoot the target in a single large step', () => {
+    const player = makePlayer({ x: 0, y: 100, speed: 1000 })
+    const moveTargetRef = { current: { x: 100, y: 128 } as MoveTarget | null }
+    updateGame({
+      dt: 1, // would normally cover 1000px
+      keys: {},
+      player,
+      stage: emptyStage,
+      answered: new Set(),
+      onTrigger: vi.fn(),
+      moveTargetRef,
+    })
+    // stops exactly at the target instead of flying past it
+    expect(player.x + player.w / 2).toBeCloseTo(100, 0)
+
+    // arrival is then detected at the start of the next frame
+    updateGame({
+      dt: 0.016,
+      keys: {},
+      player,
+      stage: emptyStage,
+      answered: new Set(),
+      onTrigger: vi.fn(),
+      moveTargetRef,
+    })
+    expect(moveTargetRef.current).toBeNull()
+  })
+
+  it('manual key input cancels an in-progress click-to-move', () => {
+    const player = makePlayer({ x: 100, y: 100 })
+    const onArrive = vi.fn()
+    const moveTargetRef = {
+      current: { x: 900, y: 100, onArrive } as MoveTarget | null,
+    }
+    updateGame({
+      dt: 0.1,
+      keys: { arrowleft: true },
+      player,
+      stage: emptyStage,
+      answered: new Set(),
+      onTrigger: vi.fn(),
+      moveTargetRef,
+    })
+    expect(moveTargetRef.current).toBeNull()
+    expect(onArrive).not.toHaveBeenCalled()
+    expect(player.x).toBeLessThan(100) // moved left, per the manual key
+  })
+
+  it('does nothing when there is no target and no keys', () => {
+    const player = makePlayer({ x: 100, y: 100 })
+    updateGame({
+      dt: 0.5,
+      keys: {},
+      player,
+      stage: emptyStage,
+      answered: new Set(),
+      onTrigger: vi.fn(),
+      moveTargetRef: { current: null },
+    })
+    expect(player.x).toBe(100)
+    expect(player.y).toBe(100)
   })
 })

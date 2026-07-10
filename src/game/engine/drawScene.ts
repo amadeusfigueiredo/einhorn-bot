@@ -46,7 +46,7 @@ export function drawScene(
     // --- Helper Function (Required for Rounded Corners) ---
 
     // 1. Define the text and set up font
-    const text = '✨ Druck mal E ✨'
+    const text = '✨ Klicken oder E drücken ✨'
 
     ctx.save()
 
