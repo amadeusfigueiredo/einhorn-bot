@@ -11,6 +11,7 @@ import { drawBackground } from '../utils/drawBackground'
 import { drawPlayer } from '../utils/drawPlayer'
 import { HEIGHT, WIDTH } from '../constants/dimensions'
 import { roundRect } from '../utils/roundRect'
+import { getNpcMaxDisplayWidth } from '../utils/npcDisplaySize'
 
 export type DrawSceneOptions = {
   /** Elapsed seconds, drives idle/walk/hover/selected animations. */
@@ -52,11 +53,14 @@ export function drawScene(
       Math.hypot(cx - n.x, cy - n.y) <= (n.talkRadius ?? 80)
   )
 
+  const npcMaxDisplayWidth = getNpcMaxDisplayWidth(width, height)
+
   for (const n of stage.npcs ?? []) {
     drawNPC(ctx, n.x, n.y, answered.has(n.id), assets, n, {
       t: options.t,
       isSelected: nearNpc?.id === n.id,
       isHovered: options.hoveredNpcId === n.id,
+      maxDisplayWidth: npcMaxDisplayWidth,
     })
   }
 

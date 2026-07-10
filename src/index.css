@@ -174,26 +174,25 @@ body {
   grid-area: right;
 }
 
-/* Dev stage selector: desktop only. On phones and tablets the game is
-   touch-only (tap the canvas to move/talk), so this stays out of the way. */
 .stage-selector-panel {
-  display: none;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  background: linear-gradient(160deg, #fff7fd 0%, #f6e6ff 100%);
+  border: 2px solid rgba(138, 92, 246, 0.35);
+  border-radius: 14px;
+  padding: 8px 14px;
+  box-shadow: 0 4px 14px rgba(138, 92, 246, 0.25);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 @media (min-width: 1200px) {
   .stage-selector-panel {
-    font-family: 'Fredoka', system-ui, sans-serif;
-    background: linear-gradient(160deg, #fff7fd 0%, #f6e6ff 100%);
-    border: 2px solid rgba(138, 92, 246, 0.35);
-    border-radius: 14px;
-    padding: 8px 14px;
-    box-shadow: 0 4px 14px rgba(138, 92, 246, 0.25);
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
     white-space: nowrap;
-    flex-shrink: 0;
   }
 }
 
@@ -264,4 +263,35 @@ body {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 6px 16px rgba(138, 92, 246, 0.3) !important;
   border-color: var(--unicorn-pink-hot) !important;
+}
+
+.confetti-burst {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -16px;
+  width: 9px;
+  height: 16px;
+  border-radius: 2px;
+  opacity: 0.95;
+  animation-name: confetti-fall;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translate(0, -10px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--drift), 420px) rotate(540deg);
+    opacity: 0;
+  }
 }
