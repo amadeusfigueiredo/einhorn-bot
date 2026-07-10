@@ -4,6 +4,7 @@ import type { StageConfig, Keys } from '../types'
 import type { PopupConfig } from '../config/PopupsConfig'
 import { POPUP_CONFIGS } from '../config/PopupsConfig'
 import { STAGES } from '../constants/stages' // Assuming STAGES constant file location
+import { saveProgress } from '../utils/progressStorage'
 
 type GameActionsHookProps = {
   stage: StageConfig
@@ -60,6 +61,10 @@ export function useGameActions({
       if (currentItem && pickedIndex === currentItem.question.correctIndex) {
         answeredRef.current.add(questionKey.id)
         isCorrect = true
+        saveProgress(window.localStorage, {
+          stageIndex,
+          answeredIds: Array.from(answeredRef.current),
+        })
       }
 
       setQuestionKey(null) // Close the Question Overlay
