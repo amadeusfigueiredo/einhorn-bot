@@ -22,6 +22,8 @@ type Params = {
   hoveredNpcRef: React.MutableRefObject<string | null>
   questionKey: { kind: 'gate' | 'npc'; id: string } | null
   onTrigger: (kind: 'gate' | 'npc', id: string) => void
+  canvasWidth: number
+  canvasHeight: number
   deps?: unknown[] // extra deps to control effect
 }
 
@@ -37,6 +39,8 @@ export default function useGameLoop({
   hoveredNpcRef,
   questionKey,
   onTrigger,
+  canvasWidth,
+  canvasHeight,
   deps = [],
 }: Params) {
   // keep last timestamp in ref
@@ -67,6 +71,8 @@ export default function useGameLoop({
           onTrigger,
           moveTargetRef,
           motionRef,
+          canvasWidth,
+          canvasHeight,
         })
       }
 
@@ -81,6 +87,8 @@ export default function useGameLoop({
           t: (t - startTime) / 1000,
           motion: motionRef.current,
           hoveredNpcId: hoveredNpcRef.current,
+          canvasWidth,
+          canvasHeight,
         }
       )
 
@@ -90,5 +98,5 @@ export default function useGameLoop({
     raf = requestAnimationFrame(step)
     return () => cancelAnimationFrame(raf)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvasRef, stage, questionKey, ...deps])
+  }, [canvasRef, stage, questionKey, canvasWidth, canvasHeight, ...deps])
 }

@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import { STAGES } from '../constants/stages'
+import { useMemo, useState } from 'react'
+import { STAGES, buildStages } from '../constants/stages'
 import { useDevNavigation, clampStageIndex } from './useDevNavigation'
+import { useCanvasSize } from './useCanvasSize'
 import { loadProgress } from '../utils/progressStorage'
 import type { StageConfig } from '../types'
 
@@ -14,7 +15,16 @@ export function useStageController() {
   const [stageIndex, setStageIndex] = useState(() =>
     clampStageIndex(initialProgress?.stageIndex ?? 0, STAGES.length)
   )
-  const stage: StageConfig = STAGES[stageIndex]
+
+  const { width: canvasWidth, height: canvasHeight } = useCanvasSize()
+
+  // NPC positions depend on the actual canvas size (landscape vs portrait),
+  // so the live stage list is rebuilt only when that size changes.
+  const liveStages = useMemo(
+    () => buildStages(canvasWidth, canvasHeight),
+    [canvasWidth, canvasHeight]
+  )
+  const stage: StageConfig = liveStages[stageIndex]
 
   const [initialAnsweredIds] = useState<string[]>(() =>
     initialProgress &&
@@ -29,6 +39,8 @@ export function useStageController() {
     stageIndex,
     setStageIndex,
     stage,
+    canvasWidth,
+    canvasHeight,
     initialAnsweredIds,
     ...nav,
   }

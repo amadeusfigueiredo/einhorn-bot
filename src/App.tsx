@@ -8,6 +8,8 @@ export default function App() {
     stage,
     stageIndex,
     setStageIndex,
+    canvasWidth,
+    canvasHeight,
     initialAnsweredIds,
     jumpInput,
     setJumpInput,
@@ -36,6 +38,8 @@ export default function App() {
         stage={stage}
         stageIndex={stageIndex}
         setStageIndex={setStageIndex}
+        canvasWidth={canvasWidth}
+        canvasHeight={canvasHeight}
         initialAnsweredIds={initialAnsweredIds}
       />
     </div>

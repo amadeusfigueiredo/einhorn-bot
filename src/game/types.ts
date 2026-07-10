@@ -167,4 +167,7 @@ export type UpdateParams = {
   moveTargetRef?: { current: MoveTarget | null }
   /** Updated in place each frame so the renderer can animate the sprite. */
   motionRef?: { current: PlayerMotion }
+  /** Canvas bounds to clamp movement to. Defaults to the landscape design size. */
+  canvasWidth?: number
+  canvasHeight?: number
 }
