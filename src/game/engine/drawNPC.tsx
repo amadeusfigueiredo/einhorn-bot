@@ -6,7 +6,11 @@ export type NpcRenderAnim = {
   t: number
   isSelected: boolean
   isHovered: boolean
+  /** Portrait size cap in canvas px - bumped up on portrait/mobile canvases. */
+  maxDisplayWidth?: number
 }
+
+const DEFAULT_MAX_DISPLAY_WIDTH = 128
 
 export function drawNPC(
   ctx: CanvasRenderingContext2D,
@@ -34,8 +38,10 @@ export function drawNPC(
     ? { scale: 1, glowAlpha: 0 }
     : computeNpcAnimation({ t: anim.t, isSelected: anim.isSelected, isHovered: anim.isHovered })
 
+  const maxDisplayWidth = anim.maxDisplayWidth ?? DEFAULT_MAX_DISPLAY_WIDTH
+
   const drawImageWithBorder = (img: HTMLImageElement) => {
-    const displayW = Math.min(128, img.width)
+    const displayW = Math.min(maxDisplayWidth, img.width)
     const displayH = Math.round((img.height / img.width) * displayW)
 
     // Glow ring behind the portrait when selected/hovered
@@ -105,7 +111,7 @@ export function drawNPC(
 
   // 3) final fallback: placeholder
   if (!imgDrawn) {
-    const r = 26
+    const r = 26 * (maxDisplayWidth / DEFAULT_MAX_DISPLAY_WIDTH)
     ctx.save()
     ctx.translate(x, y)
     ctx.scale(scale, scale)

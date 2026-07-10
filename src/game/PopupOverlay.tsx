@@ -1,5 +1,6 @@
 import type { PopupConfig } from './config/PopupsConfig'
 import type { LoaderImageAssets } from './types'
+import { ConfettiBurst } from './components/ConfettiBurst'
 
 export default function PopupOverlay({
   assets,
@@ -29,15 +30,17 @@ export default function PopupOverlay({
         inset: 0,
         display: 'grid',
         placeItems: 'center',
-        background: 'rgba(74, 46, 110, 0.6)', // Weicher violetter Fokus-Hintergrund
+        background: 'rgba(74, 46, 110, 0.35)', // Soft focus, not a hard flash
         zIndex: 1000,
         borderRadius: borderRadius,
-        animation: 'fadeIn 0.5s ease-out',
+        animation: 'fadeIn 0.6s ease-in-out',
         fontFamily: "'Fredoka', system-ui, sans-serif",
       }}
     >
+      {config.id === 'WIN' && <ConfettiBurst />}
       <div
         style={{
+          position: 'relative',
           padding: '2rem',
           background: 'linear-gradient(180deg, #fff7fd 0%, #fdf0ff 100%)',
           borderRadius: borderRadius,
@@ -46,7 +49,7 @@ export default function PopupOverlay({
           boxShadow: '0 10px 60px rgba(0,0,0,0.7)',
           maxWidth: 'min(400px, 80vw)',
           textAlign: 'center',
-          animation: 'popIn 0.3s ease-out',
+          animation: 'popIn 0.4s ease-out',
         }}
       >
         {image ? (
@@ -111,7 +114,7 @@ export default function PopupOverlay({
             to { opacity: 1; }
           }
           @keyframes popIn {
-            from { transform: scale(0.5); opacity: 0; }
+            from { transform: scale(0.85); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
           }
         `}

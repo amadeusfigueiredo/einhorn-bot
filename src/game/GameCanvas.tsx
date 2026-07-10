@@ -23,6 +23,7 @@ import { type PopupConfig } from './config/PopupsConfig'
 import PopupOverlay from './PopupOverlay'
 import { getActivePrompt } from './utils/getActivePrompt'
 import { findNpcAtPoint } from './utils/hitTest'
+import { getNpcMaxDisplayWidth } from './utils/npcDisplaySize'
 import { computePlayerSize } from './utils/playerSize'
 import { saveProgress } from './utils/progressStorage'
 import { SoundButton } from './components/SoundButton'
@@ -151,6 +152,11 @@ export default function GameCanvas({
     [canvasWidth, canvasHeight]
   )
 
+  // Tap hitbox needs to track the portrait's actual on-screen size (bigger
+  // on portrait/mobile canvases) or taps near the edge of a big icon miss it.
+  const npcHitHalfSize =
+    getNpcMaxDisplayWidth(canvasWidth, canvasHeight) / 2 + 12
+
   // Click/tap on the canvas: walk to an NPC (and auto-open its question on
   // arrival) or just walk to the tapped spot. Keyboard/D-pad input cancels it.
   const handleCanvasPointerDown = useCallback(
@@ -163,7 +169,8 @@ export default function GameCanvas({
         stage.npcs ?? [],
         point.x,
         point.y,
-        answeredRef.current
+        answeredRef.current,
+        npcHitHalfSize
       )
 
       moveTargetRef.current = npc
@@ -175,7 +182,14 @@ export default function GameCanvas({
           }
         : point
     },
-    [stage, questionKey, activePopupConfig, onTrigger, canvasPointToGameSpace]
+    [
+      stage,
+      questionKey,
+      activePopupConfig,
+      onTrigger,
+      canvasPointToGameSpace,
+      npcHitHalfSize,
+    ]
   )
 
   // Desktop-only hover highlight: touch devices don't have real hover, so we
@@ -185,16 +199,31 @@ export default function GameCanvas({
       if (e.pointerType !== 'mouse') return
       const point = canvasPointToGameSpace(e)
       const npc = point
-        ? findNpcAtPoint(stage.npcs ?? [], point.x, point.y, answeredRef.current)
+        ? findNpcAtPoint(
+            stage.npcs ?? [],
+            point.x,
+            point.y,
+            answeredRef.current,
+            npcHitHalfSize
+          )
         : undefined
       hoveredNpcRef.current = npc?.id ?? null
     },
-    [stage, canvasPointToGameSpace]
+    [stage, canvasPointToGameSpace, npcHitHalfSize]
   )
 
   const handleCanvasPointerLeave = useCallback(() => {
     hoveredNpcRef.current = null
   }, [])
+
+  // Closing the final "you finished the game" popup starts a fresh run
+  // instead of just leaving the player parked on the last stage.
+  const handlePopupClose = useCallback(() => {
+    if (activePopupConfig?.id === 'GAME_END') {
+      setStageIndex(0)
+    }
+    setActivePopupConfig(null)
+  }, [activePopupConfig, setStageIndex])
 
   const { resolveQuestion } = useGameActions({
     stage,
@@ -243,7 +272,7 @@ export default function GameCanvas({
         <PopupOverlay
           assets={assets}
           config={activePopupConfig}
-          onClose={() => setActivePopupConfig(null)}
+          onClose={handlePopupClose}
         />
       )}
     </div>
