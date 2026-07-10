@@ -133,28 +133,11 @@ body {
   cursor: pointer;
 }
 
+/* On-screen D-pad: not shown on any device. Touch plays via tap-to-move/
+   tap-to-talk, desktop plays via the keyboard - the D-pad was redundant
+   clutter on both, so it stays in the DOM (harmless) but hidden. */
 .move-controls {
-  position: absolute;
-  left: 14px;
-  bottom: 14px;
-  z-index: 998;
-  display: grid;
-  grid-template-columns: 48px 48px 48px;
-  grid-template-rows: 48px 48px 48px;
-  grid-template-areas:
-    '.    up    .'
-    'left .     right'
-    '.    down  .';
-  gap: 6px;
-  touch-action: none;
-  user-select: none;
-}
-
-@media (max-width: 640px) {
-  .move-controls {
-    grid-template-columns: 56px 56px 56px;
-    grid-template-rows: 56px 56px 56px;
-  }
+  display: none;
 }
 
 .move-btn {
@@ -191,32 +174,33 @@ body {
   grid-area: right;
 }
 
+/* Dev stage selector: desktop only. On phones and tablets the game is
+   touch-only (tap the canvas to move/talk), so this stays out of the way. */
 .stage-selector-panel {
-  font-family: 'Fredoka', system-ui, sans-serif;
-  background: linear-gradient(160deg, #fff7fd 0%, #f6e6ff 100%);
-  border: 2px solid rgba(138, 92, 246, 0.35);
-  border-radius: 14px;
-  padding: 8px 14px;
-  box-shadow: 0 4px 14px rgba(138, 92, 246, 0.25);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  min-width: 200px;
-  text-align: center;
-  flex-shrink: 0;
+  display: none;
+}
+
+@media (min-width: 1200px) {
+  .stage-selector-panel {
+    font-family: 'Fredoka', system-ui, sans-serif;
+    background: linear-gradient(160deg, #fff7fd 0%, #f6e6ff 100%);
+    border: 2px solid rgba(138, 92, 246, 0.35);
+    border-radius: 14px;
+    padding: 8px 14px;
+    box-shadow: 0 4px 14px rgba(138, 92, 246, 0.25);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
 }
 
 .stage-selector-title {
   font-size: 12px;
   font-weight: 700;
   color: var(--unicorn-violet-deep);
-}
-
-.stage-selector-row {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
 }
 
 .stage-selector-btn {
@@ -239,7 +223,7 @@ body {
 
 .stage-selector-input {
   padding: 6px;
-  width: 80px;
+  width: 64px;
   border-radius: 8px;
   border: 1px solid rgba(138, 92, 246, 0.35);
   font-family: inherit;
