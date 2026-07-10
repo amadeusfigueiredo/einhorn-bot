@@ -4,23 +4,48 @@ import { WIDTH, HEIGHT } from './dimensions'
 
 type NpcContent = Omit<NPC, 'x' | 'y'>
 
+// A stage "template": everything except NPC positions, which depend on the
+// canvas size they'll actually be rendered at (see buildStages below).
+type StageTemplate = Omit<StageConfig, 'npcs'> & { npcs: NpcContent[] }
+
 // Positions are derived instead of hand-typed so NPCs stay spread across the
 // full canvas (and reachable by the player) regardless of canvas size.
 // `stageSeed` just varies the zig-zag pattern between consecutive stages.
-function layoutStage(stageSeed: number, npcs: NpcContent[]): NPC[] {
+function layoutStage(
+  stageSeed: number,
+  npcs: NpcContent[],
+  width: number,
+  height: number
+): NPC[] {
   return npcs.map((npc, index) => ({
     ...npc,
     ...getNpcPosition({
       index,
       total: npcs.length,
       stageSeed,
-      width: WIDTH,
-      height: HEIGHT,
+      width,
+      height,
     }),
   }))
 }
 
-export const STAGES: StageConfig[] = [
+/**
+ * Builds the stage list with NPC positions laid out for a specific canvas
+ * size. Call this with the *actual* on-screen canvas dimensions (which
+ * change between the landscape and portrait design resolutions) rather than
+ * relying on the WIDTH/HEIGHT-default `STAGES` export below.
+ */
+export function buildStages(
+  width: number,
+  height: number
+): StageConfig[] {
+  return STAGE_TEMPLATES.map((template, stageSeed) => ({
+    ...template,
+    npcs: layoutStage(stageSeed, template.npcs, width, height),
+  }))
+}
+
+const STAGE_TEMPLATES: StageTemplate[] = [
   // STUFE 1 - 6 (Original, leicht korrigiert)
   {
     name: 'stage1',
@@ -28,7 +53,7 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 4,
     nextStage: 'stage2',
     gates: [],
-    npcs: layoutStage(0, [
+    npcs: [
       {
         id: 'stage1Npc1',
         imageKey: 'stage1Npc1',
@@ -69,7 +94,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 1,
         },
       },
-    ]),
+    ],
   },
   {
     name: 'stage2',
@@ -77,7 +102,7 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 1,
     nextStage: 'stage3',
     gates: [],
-    npcs: layoutStage(1, [
+    npcs: [
       {
         id: 'stage2Npc1',
         imageKey: 'stage2Npc1',
@@ -89,7 +114,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 0,
         },
       },
-    ]),
+    ],
   },
   {
     name: 'stage3',
@@ -97,7 +122,7 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 1,
     nextStage: 'stage4',
     gates: [],
-    npcs: layoutStage(2, [
+    npcs: [
       {
         id: 'stage3Npc1',
         imageKey: 'stage3Npc1',
@@ -128,7 +153,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 0,
         },
       },
-    ]),
+    ],
   },
   {
     name: 'stage4',
@@ -136,7 +161,7 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 2,
     nextStage: 'stage5',
     gates: [],
-    npcs: layoutStage(3, [
+    npcs: [
       {
         id: 'stage4Npc1',
         imageKey: 'stage4Npc1',
@@ -167,7 +192,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 2,
         },
       },
-    ]),
+    ],
   },
   {
     name: 'stage5',
@@ -175,7 +200,7 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 2,
     nextStage: 'stage6',
     gates: [],
-    npcs: layoutStage(4, [
+    npcs: [
       {
         id: 'stage5Npc1',
         imageKey: 'stage5Npc1',
@@ -206,7 +231,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 2,
         },
       },
-    ]),
+    ],
   },
   {
     name: 'stage6',
@@ -214,7 +239,7 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 2,
     nextStage: 'stage7',
     gates: [],
-    npcs: layoutStage(5, [
+    npcs: [
       {
         id: 'stage6Npc1',
         imageKey: 'stage6Npc1',
@@ -245,7 +270,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 1,
         },
       },
-    ]),
+    ],
   },
 
   // STUFE 7 (Ihre ursprüngliche Endstufe, jetzt erweitert)
@@ -255,7 +280,7 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 3,
     nextStage: 'stage8',
     gates: [],
-    npcs: layoutStage(6, [
+    npcs: [
       {
         id: 'stage7Npc1',
         imageKey: 'stage7Npc1',
@@ -286,7 +311,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 0,
         },
       },
-    ]),
+    ],
   },
 
   // STUFE 8 (Neu)
@@ -296,7 +321,7 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 3,
     nextStage: 'stage9',
     gates: [],
-    npcs: layoutStage(7, [
+    npcs: [
       {
         id: 'stage8Npc1',
         imageKey: 'stage8Npc1',
@@ -327,7 +352,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 1,
         },
       },
-    ]),
+    ],
   },
 
   // STUFE 9 (Neu)
@@ -337,7 +362,7 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 3,
     nextStage: 'stage10',
     gates: [],
-    npcs: layoutStage(8, [
+    npcs: [
       {
         id: 'stage9Npc1',
         imageKey: 'stage9Npc1',
@@ -368,7 +393,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 2,
         },
       },
-    ]),
+    ],
   },
 
   // STUFE 10 (Neu)
@@ -378,7 +403,7 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 3,
     nextStage: 'stage11',
     gates: [],
-    npcs: layoutStage(9, [
+    npcs: [
       {
         id: 'stage10Npc1',
         imageKey: 'stage10Npc1',
@@ -409,7 +434,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 1,
         },
       },
-    ]),
+    ],
   },
 
   // STUFE 11 (Neu)
@@ -419,7 +444,7 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 3,
     nextStage: 'stage12',
     gates: [],
-    npcs: layoutStage(10, [
+    npcs: [
       {
         id: 'stage11Npc1',
         imageKey: 'stage11Npc1',
@@ -450,7 +475,7 @@ export const STAGES: StageConfig[] = [
           correctIndex: 1,
         },
       },
-    ]),
+    ],
   },
 
   // STUFE 12 (Finale Stufe)
@@ -460,7 +485,7 @@ export const STAGES: StageConfig[] = [
     requiredToAdvance: 3,
     nextStage: null, // ENDE DES SPIELS
     gates: [],
-    npcs: layoutStage(11, [
+    npcs: [
       {
         id: 'stage12Npc1',
         imageKey: 'stage12Npc1',
@@ -496,6 +521,11 @@ export const STAGES: StageConfig[] = [
           correctIndex: 1, // Wir wählen 'Danke' als die netteste Antwort :)
         },
       },
-    ]),
+    ],
   },
 ]
+
+// Default landscape-laid-out stages, for consumers that only care about
+// stage metadata (name, count, nextStage chain) and never render NPCs -
+// dev navigation, stage-index lookups, data-integrity tests, etc.
+export const STAGES: StageConfig[] = buildStages(WIDTH, HEIGHT)

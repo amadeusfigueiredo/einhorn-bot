@@ -18,6 +18,8 @@ export type DrawSceneOptions = {
   motion?: PlayerMotion
   /** NPC currently under the mouse cursor (desktop hover only). */
   hoveredNpcId?: string | null
+  canvasWidth?: number
+  canvasHeight?: number
 }
 
 export function drawScene(
@@ -28,13 +30,16 @@ export function drawScene(
   assets: LoaderImageAssets | undefined,
   options: DrawSceneOptions = { t: 0 }
 ) {
-  ctx.clearRect(0, 0, WIDTH, HEIGHT)
+  const width = options.canvasWidth ?? WIDTH
+  const height = options.canvasHeight ?? HEIGHT
+
+  ctx.clearRect(0, 0, width, height)
   drawBackground(
     ctx,
     stage,
     (assets as LoaderImageAssets) ?? ({} as LoaderImageAssets),
-    WIDTH,
-    HEIGHT
+    width,
+    height
   )
 
   drawGates(ctx, stage.gates ?? [], answered)

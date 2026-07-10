@@ -21,7 +21,6 @@ import type {
 import type { StageConfig, Player } from './types'
 import { type PopupConfig } from './config/PopupsConfig'
 import PopupOverlay from './PopupOverlay'
-import { HEIGHT, WIDTH } from './constants/dimensions'
 import { getActivePrompt } from './utils/getActivePrompt'
 import { findNpcAtPoint } from './utils/hitTest'
 import { computePlayerSize } from './utils/playerSize'
@@ -33,6 +32,8 @@ type GameCanvasProps = {
   stage: StageConfig
   stageIndex: number
   setStageIndex: (index: number) => void
+  canvasWidth: number
+  canvasHeight: number
   /** NPCs already answered in this stage, restored from a previous session. */
   initialAnsweredIds: string[]
 }
@@ -41,6 +42,8 @@ export default function GameCanvas({
   stage,
   stageIndex,
   setStageIndex,
+  canvasWidth,
+  canvasHeight,
   initialAnsweredIds,
 }: GameCanvasProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -130,18 +133,23 @@ export default function GameCanvas({
     hoveredNpcRef,
     questionKey,
     onTrigger,
-    deps: [stageIndex],
+    canvasWidth,
+    canvasHeight,
+    deps: [stageIndex, canvasWidth, canvasHeight],
   })
 
-  const canvasPointToGameSpace = useCallback((e: PointerEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current
-    if (!canvas) return null
-    const rect = canvas.getBoundingClientRect()
-    return {
-      x: ((e.clientX - rect.left) / rect.width) * WIDTH,
-      y: ((e.clientY - rect.top) / rect.height) * HEIGHT,
-    }
-  }, [])
+  const canvasPointToGameSpace = useCallback(
+    (e: PointerEvent<HTMLCanvasElement>) => {
+      const canvas = canvasRef.current
+      if (!canvas) return null
+      const rect = canvas.getBoundingClientRect()
+      return {
+        x: ((e.clientX - rect.left) / rect.width) * canvasWidth,
+        y: ((e.clientY - rect.top) / rect.height) * canvasHeight,
+      }
+    },
+    [canvasWidth, canvasHeight]
+  )
 
   // Click/tap on the canvas: walk to an NPC (and auto-open its question on
   // arrival) or just walk to the tapped spot. Keyboard/D-pad input cancels it.
@@ -208,7 +216,7 @@ export default function GameCanvas({
       className="game-frame"
       style={{
         position: 'relative',
-        width: WIDTH,
+        width: canvasWidth,
         maxWidth: '98vw',
         margin: '16px auto',
         overflow: 'hidden',
@@ -217,8 +225,8 @@ export default function GameCanvas({
       <SoundButton onClick={enableAudioNow} />
       <canvas
         ref={canvasRef}
-        width={WIDTH}
-        height={HEIGHT}
+        width={canvasWidth}
+        height={canvasHeight}
         onPointerDown={handleCanvasPointerDown}
         onPointerMove={handleCanvasPointerMove}
         onPointerLeave={handleCanvasPointerLeave}

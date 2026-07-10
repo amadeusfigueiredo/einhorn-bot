@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { STAGES } from './stages'
-import { WIDTH, HEIGHT } from './dimensions'
+import { STAGES, buildStages } from './stages'
+import { WIDTH, HEIGHT, PORTRAIT_WIDTH, PORTRAIT_HEIGHT } from './dimensions'
 
 const stageNames = new Set(STAGES.map((s) => s.name))
 
@@ -67,5 +67,48 @@ describe('STAGES data integrity', () => {
       expect(stage.nextStage).not.toBeNull()
     })
     expect(STAGES[STAGES.length - 1].nextStage).toBeNull()
+  })
+})
+
+describe('buildStages', () => {
+  it('matches STAGES when built with the default (landscape) size', () => {
+    expect(buildStages(WIDTH, HEIGHT)).toEqual(STAGES)
+  })
+
+  it('keeps every NPC within the reachable area of a portrait canvas', () => {
+    const portraitStages = buildStages(PORTRAIT_WIDTH, PORTRAIT_HEIGHT)
+    for (const stage of portraitStages) {
+      for (const n of stage.npcs ?? []) {
+        expect(n.x).toBeGreaterThan(0)
+        expect(n.x).toBeLessThan(PORTRAIT_WIDTH)
+        expect(n.y).toBeGreaterThan(0)
+        expect(n.y).toBeLessThan(PORTRAIT_HEIGHT)
+      }
+    }
+  })
+
+  it('keeps stage content (ids, questions, requiredToAdvance) identical across sizes', () => {
+    const landscape = buildStages(WIDTH, HEIGHT)
+    const portrait = buildStages(PORTRAIT_WIDTH, PORTRAIT_HEIGHT)
+    expect(portrait.map((s) => s.name)).toEqual(landscape.map((s) => s.name))
+    expect(portrait.map((s) => s.requiredToAdvance)).toEqual(
+      landscape.map((s) => s.requiredToAdvance)
+    )
+    landscape.forEach((stage, i) => {
+      expect((portrait[i].npcs ?? []).map((n) => n.id)).toEqual(
+        (stage.npcs ?? []).map((n) => n.id)
+      )
+      expect((portrait[i].npcs ?? []).map((n) => n.question)).toEqual(
+        (stage.npcs ?? []).map((n) => n.question)
+      )
+    })
+  })
+
+  it('repositions NPCs rather than reusing landscape coordinates verbatim', () => {
+    const landscape = buildStages(WIDTH, HEIGHT)
+    const portrait = buildStages(PORTRAIT_WIDTH, PORTRAIT_HEIGHT)
+    const landscapePositions = (landscape[0].npcs ?? []).map((n) => `${n.x},${n.y}`)
+    const portraitPositions = (portrait[0].npcs ?? []).map((n) => `${n.x},${n.y}`)
+    expect(portraitPositions).not.toEqual(landscapePositions)
   })
 })

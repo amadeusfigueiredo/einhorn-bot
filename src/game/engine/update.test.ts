@@ -54,6 +54,22 @@ describe('updateGame movement', () => {
     expect(player.y).toBe(HEIGHT - player.h)
   })
 
+  it('clamps to a custom canvasWidth/canvasHeight (e.g. the portrait design size)', () => {
+    const player = makePlayer({ x: 700, y: 1300, speed: 1000 })
+    updateGame({
+      dt: 1,
+      keys: { arrowright: true, arrowdown: true },
+      player,
+      stage: emptyStage,
+      answered: new Set(),
+      onTrigger: vi.fn(),
+      canvasWidth: 760,
+      canvasHeight: 1350,
+    })
+    expect(player.x).toBe(760 - player.w)
+    expect(player.y).toBe(1350 - player.h)
+  })
+
   it('never lets the player go below 0,0', () => {
     const player = makePlayer({ x: 0, y: 0, speed: 1000 })
     updateGame({

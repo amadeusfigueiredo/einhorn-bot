@@ -15,6 +15,8 @@ export function updateGame(params: UpdateParams) {
     onTrigger,
     moveTargetRef,
     motionRef,
+    canvasWidth = WIDTH,
+    canvasHeight = HEIGHT,
   } = params
 
   const left = keys['arrowleft'] || keys['a']
@@ -33,8 +35,16 @@ export function updateGame(params: UpdateParams) {
     vx = (right ? 1 : 0) - (left ? 1 : 0)
     const vy = (down ? 1 : 0) - (up ? 1 : 0)
 
-    player.x = clamp(player.x + vx * player.speed * dt, 0, WIDTH - player.w)
-    player.y = clamp(player.y + vy * player.speed * dt, 0, HEIGHT - player.h)
+    player.x = clamp(
+      player.x + vx * player.speed * dt,
+      0,
+      canvasWidth - player.w
+    )
+    player.y = clamp(
+      player.y + vy * player.speed * dt,
+      0,
+      canvasHeight - player.h
+    )
     moving = vx !== 0 || vy !== 0
   } else if (moveTargetRef?.current) {
     const target = moveTargetRef.current
@@ -53,12 +63,12 @@ export function updateGame(params: UpdateParams) {
       player.x = clamp(
         player.x + (dx / distanceToTarget) * step,
         0,
-        WIDTH - player.w
+        canvasWidth - player.w
       )
       player.y = clamp(
         player.y + (dy / distanceToTarget) * step,
         0,
-        HEIGHT - player.h
+        canvasHeight - player.h
       )
       vx = dx
       moving = true
