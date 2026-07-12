@@ -12,6 +12,18 @@ export type SceneName =
   | 'stage10'
   | 'stage11'
   | 'stage12'
+  | 'stage13'
+  | 'stage14'
+  | 'stage15'
+
+export type Subject =
+  | 'Mathematik'
+  | 'Deutsch'
+  | 'Sachunterricht'
+  | 'Musik'
+  | 'Bildende Kunst'
+
+export type Difficulty = 'leicht' | 'mittel' | 'schwer'
 
 export type Rect = { x: number; y: number; w: number; h: number }
 
@@ -58,6 +70,8 @@ export type StageConfig = {
   nextStage?: SceneName | null
   gates?: Gate[] // optional now
   npcs?: NPC[] // NEW
+  subject: Subject
+  difficulty: Difficulty
 }
 
 export type Npc = {
@@ -128,10 +142,13 @@ export type LoaderImageAssets = {
   player1?: HTMLImageElement
 }
 
+// Only stages that actually ship a music file get a key here - everything
+// else falls back to one of these via audioResolver.ts.
 export type LoaderAudioAssets = {
   stage1?: HTMLAudioElement
   stage2?: HTMLAudioElement
-  stage3?: HTMLAudioElement
+  stage11?: HTMLAudioElement
+  stage12?: HTMLAudioElement
 }
 
 export type Player = {

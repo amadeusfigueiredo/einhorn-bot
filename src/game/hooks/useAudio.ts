@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState, useCallback, type RefObject } from 'react'
 import type { LoaderAudioAssets, StageConfig } from '../types'
+import { resolveStageAudioKey } from '../utils/audioResolver'
 
 export default function useAudioManager(opts: {
   audioRef: RefObject<LoaderAudioAssets | null>
   stage: StageConfig
+  stageIndex: number
   assetsLoaded: boolean
 }) {
-  const { audioRef, stage, assetsLoaded } = opts
+  const { audioRef, stage, stageIndex, assetsLoaded } = opts
 
   const audioUnlockedRef = useRef(false)
   const currentAudioRef = useRef<HTMLAudioElement | null>(null)
@@ -17,16 +19,7 @@ export default function useAudioManager(opts: {
     if (!audio) return false
     try {
       audio.loop = true
-      // set a sane default volume (don't override if intentionally set elsewhere)
-      if (
-        typeof audio.volume === 'number' &&
-        (audio.volume === 1 || audio.volume === 0)
-      ) {
-        console.log(audio.volume)
-        // do nothing if 0 or explicitly 1; otherwise set 0.6 as default
-      } else {
-        audio.volume = audio.volume ?? 0.6
-      }
+      audio.volume = 0.6
       await audio.play()
       return true
     } catch (err) {
@@ -36,71 +29,24 @@ export default function useAudioManager(opts: {
   }, [])
 
   /**
-   * Resolve an Audio element for the current stage from the provided audio assets.
-   * Tries multiple candidate keys and falls back to the first audio present.
+   * Resolve an Audio element for the current stage: its own track if it has
+   * one, otherwise a deterministically-cycled fallback so every stage has
+   * music even without a dedicated file.
    */
   const getAudioForStage = useCallback(
     (a?: LoaderAudioAssets | null): HTMLAudioElement | undefined => {
       if (!a) return undefined
-
-      // Make a plain map of the audio-like entries
-      const audioCollections: Record<string, HTMLAudioElement | string> = {
-        ...a,
-      }
-
-      // Build candidates from stage data
-      const candidates: string[] = []
-      if (stage?.name) candidates.push(String(stage.name)) // "stage1"
-      if (stage?.background) candidates.push(String(stage.background)) // "stage1Background"
-      if (
-        stage?.background &&
-        String(stage.background).endsWith('Background')
-      ) {
-        candidates.push(String(stage.background).replace(/Background$/, '')) // "stage1Background" -> "stage1"
-      }
-
-      // Also try lowercased variants (robustness)
-      const altCandidates = candidates.flatMap((c) => [
-        c,
-        c.toLowerCase(),
-        c.replace(/[-_]/g, ''),
-      ])
-
-      for (const key of altCandidates) {
-        const found = audioCollections[key as keyof typeof audioCollections]
-        if (found instanceof HTMLAudioElement) return found
-        if (typeof found === 'string') {
-          try {
-            const au = new Audio(found)
-            au.loop = true
-            au.preload = 'auto'
-            au.volume = 0.6
-            return au
-          } catch {
-            // ignore
-          }
-        }
-      }
-
-      for (const k of Object.keys(audioCollections)) {
-        const v = audioCollections[k]
-        if (v instanceof HTMLAudioElement) return v
-        if (typeof v === 'string') {
-          try {
-            const au = new Audio(v)
-            au.loop = true
-            au.preload = 'auto'
-            au.volume = 0.6
-            return au
-          } catch {
-            console.error('fallback audio not loaded')
-          }
-        }
-      }
-
-      return undefined
+      const availableTrackKeys = (
+        Object.keys(a) as Array<keyof LoaderAudioAssets>
+      ).filter((k) => Boolean(a[k]))
+      const key = resolveStageAudioKey(
+        stageIndex,
+        stage.name,
+        availableTrackKeys
+      )
+      return key ? a[key as keyof LoaderAudioAssets] : undefined
     },
-    [stage]
+    [stage, stageIndex]
   )
 
   const enableAudioNow = useCallback(() => {
@@ -112,9 +58,6 @@ export default function useAudioManager(opts: {
       console.warn('enableAudioNow: no assets present yet')
       return
     }
-    const presentKeys = (
-      Object.keys(a) as Array<keyof LoaderAudioAssets>
-    ).filter((k) => Boolean(a[k]))
 
     const audio = getAudioForStage(a)
     if (audio) {
@@ -125,10 +68,7 @@ export default function useAudioManager(opts: {
     } else {
       console.warn(
         'enableAudioNow: no audio found in assets for current stage',
-        {
-          stageName: stage?.name,
-          keys: presentKeys,
-        }
+        { stageName: stage?.name }
       )
     }
   }, [audioRef, stage, getAudioForStage, tryPlayAudio])

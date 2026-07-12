@@ -50,10 +50,15 @@ function makeDefaultImageKeys(): Array<keyof LoaderImageAssets> {
   return keys as Array<keyof LoaderImageAssets>
 }
 
-function makeDefaultAudioKeys(): Array<keyof LoaderAudioAssets> {
-  const keys: string[] = []
-  for (let s = 1; s <= MAX_STAGE; s++) keys.push(`stage${s}`)
-  return keys as Array<keyof LoaderAudioAssets>
+// Only these stages actually ship a music file, each with its own real
+// extension - stage11/stage12 were exported as .mp4 (audio-only AAC, which
+// <audio> plays fine) rather than .m4a like stage1/stage2. Every other stage
+// falls back to one of these via audioResolver.ts instead of 404ing.
+const AUDIO_FILES: Record<keyof LoaderAudioAssets, string> = {
+  stage1: 'stage1.m4a',
+  stage2: 'stage2.m4a',
+  stage11: 'stage11.mp4',
+  stage12: 'stage12.mp4',
 }
 
 export async function loadImageAssets({
@@ -91,24 +96,20 @@ export async function loadImageAssets({
 }
 
 export function loadAudioAssets({
-  audioKeys,
+  audioFiles = AUDIO_FILES,
   path = '/assets/',
-  ext = '.m4a',
 }: {
-  audioKeys?: Array<keyof LoaderAudioAssets>
+  audioFiles?: Partial<Record<keyof LoaderAudioAssets, string>>
   path?: string
-  ext?: string
 } = {}): LoaderAudioAssets {
   const assets: LoaderAudioAssets = {}
 
-  // ✅ changed: generate defaults instead of hardcoding
-  const keys = audioKeys ?? makeDefaultAudioKeys()
-
-  for (const k of keys) {
-    const filename = `${String(k)}${ext}`
+  for (const [key, filename] of Object.entries(audioFiles) as Array<
+    [keyof LoaderAudioAssets, string]
+  >) {
     const url = new URL(`${path}${filename}`, import.meta.url).toString()
     const audio = makeAudio(url)
-    if (audio) (assets as LoaderAudioAssets)[k] = audio
+    if (audio) assets[key] = audio
     else console.warn(`failed to create audio for ${filename} (${url})`)
   }
 
@@ -117,10 +118,9 @@ export function loadAudioAssets({
 
 export async function loadAssets(options?: {
   imageKeys?: Array<keyof LoaderImageAssets>
-  audioKeys?: Array<keyof LoaderAudioAssets>
+  audioFiles?: Partial<Record<keyof LoaderAudioAssets, string>>
   path?: string
   imageExtension?: string
-  audioExtension?: string
 }): Promise<{ images: LoaderImageAssets; audio: LoaderAudioAssets }> {
   const images = await loadImageAssets({
     imageKeys: options?.imageKeys,
@@ -128,9 +128,8 @@ export async function loadAssets(options?: {
     ext: options?.imageExtension ?? '.png',
   })
   const audio = loadAudioAssets({
-    audioKeys: options?.audioKeys,
+    audioFiles: options?.audioFiles,
     path: options?.path,
-    ext: options?.audioExtension ?? '.m4a',
   })
   return { images, audio }
 }

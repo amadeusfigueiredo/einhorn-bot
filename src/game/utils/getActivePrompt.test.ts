@@ -4,6 +4,8 @@ import type { StageConfig } from '../types'
 
 const stage: StageConfig = {
   name: 'stage1',
+  subject: 'Mathematik',
+  difficulty: 'leicht',
   gates: [
     {
       id: 'gate1',
