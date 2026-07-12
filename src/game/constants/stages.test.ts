@@ -112,3 +112,67 @@ describe('buildStages', () => {
     expect(portraitPositions).not.toEqual(landscapePositions)
   })
 })
+
+describe('curriculum structure', () => {
+  const SUBJECT_ORDER = [
+    'Mathematik',
+    'Deutsch',
+    'Sachunterricht',
+    'Musik',
+    'Bildende Kunst',
+  ]
+  const DIFFICULTY_ORDER = ['leicht', 'mittel', 'schwer']
+
+  it('has 15 stages: 5 subjects x 3 stages each', () => {
+    expect(STAGES).toHaveLength(15)
+  })
+
+  it('every stage has exactly 4 NPC questions', () => {
+    for (const stage of STAGES) {
+      expect(stage.npcs ?? []).toHaveLength(4)
+    }
+  })
+
+  it('groups stages into sequential 3-stage blocks per subject, in order', () => {
+    const subjectsInOrder = STAGES.map((s) => s.subject)
+    const expected = SUBJECT_ORDER.flatMap((subject) => [
+      subject,
+      subject,
+      subject,
+    ])
+    expect(subjectsInOrder).toEqual(expected)
+  })
+
+  it('ramps difficulty leicht -> mittel -> schwer within each subject block', () => {
+    for (let block = 0; block < SUBJECT_ORDER.length; block++) {
+      const stagesInBlock = STAGES.slice(block * 3, block * 3 + 3)
+      expect(stagesInBlock.map((s) => s.difficulty)).toEqual(DIFFICULTY_ORDER)
+    }
+  })
+
+  it('keeps Deutsch and Mathematik question text free of higher-grade markers', () => {
+    // These two subjects are restricted to Klasse 1-2 per the curriculum
+    // brief; a loose smell test that nobody accidentally wrote e.g.
+    // "Klasse 3" content into them.
+    const restricted = STAGES.filter(
+      (s) => s.subject === 'Mathematik' || s.subject === 'Deutsch'
+    )
+    for (const stage of restricted) {
+      for (const npc of stage.npcs ?? []) {
+        expect(npc.question.prompt).not.toMatch(/Klasse\s*[3-9]/i)
+      }
+    }
+  })
+
+  it('has globally unique NPC ids across all 15 stages', () => {
+    const allIds = STAGES.flatMap((s) => (s.npcs ?? []).map((n) => n.id))
+    expect(new Set(allIds).size).toBe(allIds.length)
+  })
+
+  it('has globally unique question ids across all 15 stages', () => {
+    const allQuestionIds = STAGES.flatMap((s) =>
+      (s.npcs ?? []).map((n) => n.question.id)
+    )
+    expect(new Set(allQuestionIds).size).toBe(allQuestionIds.length)
+  })
+})

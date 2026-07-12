@@ -113,6 +113,7 @@ export default function GameCanvas({
   const { enableAudioNow } = useAudioManager({
     audioRef,
     stage,
+    stageIndex,
     assetsLoaded,
   })
 

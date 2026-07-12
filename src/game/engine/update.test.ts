@@ -11,7 +11,13 @@ function makeMotionRef(overrides: Partial<PlayerMotion> = {}) {
   return { current: { moving: false, facingLeft: false, ...overrides } }
 }
 
-const emptyStage: StageConfig = { name: 'stage1', gates: [], npcs: [] }
+const emptyStage: StageConfig = {
+  name: 'stage1',
+  subject: 'Mathematik',
+  difficulty: 'leicht',
+  gates: [],
+  npcs: [],
+}
 
 describe('updateGame movement', () => {
   it('moves the player right at the given speed', () => {
@@ -101,6 +107,8 @@ describe('updateGame movement', () => {
 describe('updateGame gate triggers', () => {
   const stageWithGate: StageConfig = {
     name: 'stage1',
+    subject: 'Mathematik',
+    difficulty: 'leicht',
     gates: [
       {
         id: 'gate1',
@@ -141,6 +149,8 @@ describe('updateGame gate triggers', () => {
 describe('updateGame npc triggers', () => {
   const stageWithNpc: StageConfig = {
     name: 'stage1',
+    subject: 'Mathematik',
+    difficulty: 'leicht',
     gates: [],
     npcs: [
       {

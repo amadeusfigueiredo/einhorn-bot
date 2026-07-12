@@ -34,7 +34,7 @@ export default function StageSelector({
       </button>
 
       <span className="stage-selector-current">
-        {`${stageIndex + 1} / ${totalStages} — ${stage?.name ?? ''}`}
+        {`${stageIndex + 1} / ${totalStages} — ${stage?.subject ?? ''} (${stage?.difficulty ?? ''})`}
       </span>
 
       <button

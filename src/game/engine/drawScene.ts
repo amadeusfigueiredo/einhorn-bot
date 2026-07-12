@@ -72,7 +72,8 @@ export function drawScene(
 
   const total = (stage.gates ?? []).length + (stage.npcs ?? []).length
   const req = stage.requiredToAdvance ?? total
-  drawHUD(ctx, stage.name, answered.size, req, total)
+  const hudLabel = `${stage.subject} · ${stage.difficulty}`
+  drawHUD(ctx, hudLabel, answered.size, req, total)
 
   if (nearNpc) {
     // --- Helper Function (Required for Rounded Corners) ---
