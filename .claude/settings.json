@@ -1,0 +1,54 @@
+{
+    "permissions": {
+        "allow": [
+            "Write",
+            "Edit",
+            "Bash(pnpm *)",
+            "Bash(npm run *)",
+            "Bash(npm install*)",
+            "Bash(npx *)",
+            "Bash(git status*)",
+            "Bash(git diff*)",
+            "Bash(git log*)",
+            "Bash(git add *)",
+            "Bash(git commit *)",
+            "Bash(git checkout *)",
+            "Bash(git switch *)",
+            "Bash(git push origin HEAD*)",
+            "Bash(gh pr *)",
+            "Bash(mkdir *)",
+            "Bash(ls *)",
+            "Bash(cat *)",
+            "Bash(grep *)",
+            "Bash(head *)",
+            "Bash(tail *)",
+            "Bash(curl -s http://localhost:*)"
+        ],
+        "deny": [
+            "Bash(git push --force*)",
+            "Bash(git push -f*)",
+            "Bash(git push origin main*)",
+            "Bash(git push origin master*)",
+            "Bash(rm -rf *)",
+            "Bash(sudo *)",
+            "Read(./.env*)"
+        ],
+        "defaultMode": "acceptEdits"
+    },
+    "enabledMcpjsonServers": [
+        "playwright"
+    ],
+    "enabledPlugins": {
+        "code-simplifier@claude-plugins-official": true,
+        "ui-ux-pro-max@ui-ux-pro-max-skill": true,
+        "superpowers@anthropic-plugin-directory": true
+    },
+    "extraKnownMarketplaces": {
+        "ui-ux-pro-max-skill": {
+            "source": {
+                "source": "github",
+                "repo": "nextlevelbuilder/ui-ux-pro-max-skill"
+            }
+        }
+    }
+}
