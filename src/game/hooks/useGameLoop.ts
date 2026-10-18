@@ -11,6 +11,9 @@ import type {
 import type { StageConfig } from '../types'
 import { gameStore } from '../logic/gameStore.instance'
 import { isWorldPaused } from '../logic/gameMachine'
+import { stepParticles, type Particle } from '../engine/particles'
+import { smoothToward } from '../utils/smooth'
+import { prefersReducedMotion } from '../utils/prefersReducedMotion'
 
 type Params = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>
@@ -21,6 +24,7 @@ type Params = {
   moveTargetRef: React.MutableRefObject<MoveTarget | null>
   motionRef: React.MutableRefObject<PlayerMotion>
   hoveredNpcRef: React.MutableRefObject<string | null>
+  particlesRef: React.MutableRefObject<Particle[]>
   onTrigger: (kind: 'gate' | 'npc', id: string) => void
   canvasWidth: number
   canvasHeight: number
@@ -36,6 +40,7 @@ export default function useGameLoop({
   moveTargetRef,
   motionRef,
   hoveredNpcRef,
+  particlesRef,
   onTrigger,
   canvasWidth,
   canvasHeight,
@@ -50,6 +55,8 @@ export default function useGameLoop({
     if (!ctx) return
 
     let raf = 0
+    const reduceMotion = prefersReducedMotion()
+    const display = { x: playerRef.current.x, y: playerRef.current.y }
     const startTime = performance.now()
     lastRef.current = startTime
 
@@ -75,6 +82,12 @@ export default function useGameLoop({
         })
       }
 
+      // The sprite eases toward the logical position instead of snapping to it.
+      const player = playerRef.current
+      display.x = reduceMotion ? player.x : smoothToward(display.x, player.x, dt)
+      display.y = reduceMotion ? player.y : smoothToward(display.y, player.y, dt)
+      particlesRef.current = stepParticles(particlesRef.current, dt)
+
       // draw always
       drawScene(
         ctx!,
@@ -86,6 +99,9 @@ export default function useGameLoop({
           t: (t - startTime) / 1000,
           motion: motionRef.current,
           hoveredNpcId: hoveredNpcRef.current,
+          playerDisplay: display,
+          particles: particlesRef.current,
+          reduceMotion,
           canvasWidth,
           canvasHeight,
         }

@@ -6,7 +6,6 @@ import {
   type JSX,
   type PointerEvent,
 } from 'react'
-import QuestionOverlay from './QuestionOverlay'
 import useKeys from './hooks/useKeys'
 import useGameLoop from './hooks/useGameLoop'
 import useAudioManager from './hooks/useAudio'
@@ -21,13 +20,23 @@ import type { StageConfig, Player } from './types'
 import { POPUPS } from './data/popups'
 import { gameStore, useGame } from './logic/gameStore.instance'
 import { isWorldPaused } from './logic/gameMachine'
-import PopupOverlay from './PopupOverlay'
 import { getActivePrompt } from './utils/getActivePrompt'
 import { findNpcAtPoint } from './utils/hitTest'
 import { getNpcMaxDisplayWidth } from './utils/npcDisplaySize'
 import { computePlayerSize } from './utils/playerSize'
-import { SoundButton } from './components/SoundButton'
 import { MoveControls } from './components/MoveControls'
+import { AnimatePresence } from 'framer-motion'
+import { QuestionCard } from './ui/QuestionCard'
+import { DialogueBox } from './ui/DialogueBox'
+import { FeedbackPopup } from './ui/FeedbackPopup'
+import { EndingScreen } from './ui/EndingScreen'
+import { StageCard } from './ui/StageCard'
+import { LoadingScreen } from './ui/LoadingScreen'
+import { SoundToggle } from './ui/SoundToggle'
+import { useGameEffects } from './hooks/useGameEffects'
+import { pickGreeting } from './data/dialogue'
+import { STAGES } from './constants/stages'
+import type { Particle } from './engine/particles'
 
 type GameCanvasProps = {
   stage: StageConfig
@@ -56,6 +65,9 @@ export default function GameCanvas({
   const moveTargetRef = useRef<MoveTarget | null>(null)
   const motionRef = useRef<PlayerMotion>({ moving: false, facingLeft: false })
   const hoveredNpcRef = useRef<string | null>(null)
+  const particlesRef = useRef<Particle[]>([])
+  const stageRef = useRef(stage)
+  stageRef.current = stage
   const [assetsLoaded, setAssetsLoaded] = useState(false)
 
   // A new stage cancels any click-to-move target from the previous one.
@@ -106,6 +118,8 @@ export default function GameCanvas({
     assetsLoaded,
   })
 
+  useGameEffects(stageRef, particlesRef)
+
   const onTrigger = useCallback(
     (kind: 'gate' | 'npc', id: string) => {
       gameStore.getState().interact({ kind, id })
@@ -127,6 +141,7 @@ export default function GameCanvas({
     moveTargetRef,
     motionRef,
     hoveredNpcRef,
+    particlesRef,
     onTrigger,
     canvasWidth,
     canvasHeight,
@@ -213,43 +228,88 @@ export default function GameCanvas({
   const activePrompt =
     phase === 'asking' ? getActivePrompt(activeQuestion, stage) : null
 
-  const assets = assetsRef.current || ({} as LoaderImageAssets)
+  const talkingNpc =
+    phase === 'talking'
+      ? stage.npcs?.find((n) => n.id === activeQuestion?.id)
+      : undefined
+  const imageSrc = (key?: string) =>
+    key ? assetsRef.current?.[key as keyof LoaderImageAssets]?.src : undefined
+  const beginAsking = gameStore.getState().beginAsking
+  const answer = gameStore.getState().answer
+  const restart = gameStore.getState().restart
 
   return (
     <div
       className="game-frame"
-      style={{
-        position: 'relative',
-        width: canvasWidth,
-        maxWidth: '98vw',
-        margin: '16px auto',
-        overflow: 'hidden',
-      }}
+      style={{ width: canvasWidth }}
+      data-feedback={popup?.id === 'TRY_AGAIN' ? 'wrong' : undefined}
     >
-      <SoundButton onClick={enableAudioNow} />
       <canvas
         ref={canvasRef}
         width={canvasWidth}
         height={canvasHeight}
+        role="img"
+        aria-label="Spielfeld. Laufe mit den Pfeiltasten oder W, A, S, D zu einem Einhorn und drücke E. Oder tippe auf ein Einhorn."
         onPointerDown={handleCanvasPointerDown}
         onPointerMove={handleCanvasPointerMove}
         onPointerLeave={handleCanvasPointerLeave}
       />
       <MoveControls keysRef={keysRef} moveTargetRef={moveTargetRef} />
-      {activePrompt && (
-        <QuestionOverlay
-          prompt={activePrompt.prompt}
-          choices={activePrompt.choices}
-          onPick={gameStore.getState().answer}
+      <SoundToggle onUnmute={enableAudioNow} />
+
+      {/* Announced to screen readers whenever the stage changes. */}
+      <p className="visually-hidden" aria-live="polite">
+        Stufe {stageIndex + 1} von {STAGES.length}: {stage.subject}
+      </p>
+
+      {assetsLoaded && (
+        <StageCard
+          key={stageIndex}
+          stage={stage}
+          stageIndex={stageIndex}
+          totalStages={STAGES.length}
         />
       )}
-      {popup && assetsLoaded && (
-        <PopupOverlay
-          assets={assets}
-          config={POPUPS[popup.id]}
-          onClose={gameStore.getState().restart}
-        />
-      )}
+
+      <AnimatePresence>
+        {talkingNpc && (
+          <DialogueBox
+            key={`talk-${talkingNpc.id}`}
+            text={pickGreeting(stage.subject, talkingNpc.id)}
+            portraitSrc={imageSrc(talkingNpc.imageKey)}
+            onContinue={beginAsking}
+          />
+        )}
+        {activePrompt && (
+          <QuestionCard
+            key={`ask-${activeQuestion?.id}`}
+            prompt={activePrompt.prompt}
+            choices={activePrompt.choices}
+            onPick={answer}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {popup &&
+          assetsLoaded &&
+          (popup.id === 'GAME_END' ? (
+            <EndingScreen
+              key="ending"
+              imageSrc={imageSrc(POPUPS.GAME_END.imageKey)}
+              onRestart={restart}
+            />
+          ) : (
+            <FeedbackPopup
+              key={`popup-${popup.token}`}
+              config={POPUPS[popup.id]}
+              seed={popup.token}
+              imageSrc={imageSrc(POPUPS[popup.id].imageKey)}
+            />
+          ))}
+      </AnimatePresence>
+
+      {!assetsLoaded && <LoadingScreen />}
     </div>
   )
 }

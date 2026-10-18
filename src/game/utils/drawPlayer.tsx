@@ -1,29 +1,13 @@
 import type { LoaderImageAssets } from '../types'
 import { roundRect } from './roundRect'
 import { computePlayerBob, computePlayerGlow } from './playerAnimation'
+import { canvasTheme, withAlpha } from '../../styles/canvasTheme'
 
 export type PlayerRenderAnim = {
   t: number
   moving: boolean
   facingLeft: boolean
-}
-
-const RAINBOW_STOPS: [number, string][] = [
-  [0, '#FF00A0'],
-  [0.25, '#FFD700'],
-  [0.5, '#00FFFF'],
-  [0.75, '#5D3FD3'],
-  [1, '#FF69B4'],
-]
-
-function rainbowGradient(
-  ctx: CanvasRenderingContext2D,
-  x0: number,
-  x1: number
-) {
-  const gradient = ctx.createLinearGradient(x0, 0, x1, 0)
-  for (const [stop, color] of RAINBOW_STOPS) gradient.addColorStop(stop, color)
-  return gradient
+  reduceMotion?: boolean
 }
 
 export function drawPlayer(
@@ -35,8 +19,11 @@ export function drawPlayer(
   const BORDER_RADIUS = 12
   const BORDER_WIDTH = 4
 
-  const bob = computePlayerBob(anim.t, anim.moving)
-  const glowAlpha = computePlayerGlow(anim.t)
+  const theme = canvasTheme()
+  const bob = anim.reduceMotion
+    ? { offsetY: 0, scaleX: 1, scaleY: 1 }
+    : computePlayerBob(anim.t, anim.moving)
+  const glowAlpha = anim.reduceMotion ? 0.8 : computePlayerGlow(anim.t)
   const centerX = p.x + p.w / 2
   const centerY = p.y + p.h / 2
 
@@ -44,7 +31,7 @@ export function drawPlayer(
   ctx.save()
   const shadowSquash = Math.max(0.7, 1 - Math.abs(bob.offsetY) * 0.03)
   ctx.globalAlpha = 0.22
-  ctx.fillStyle = '#2a1a45'
+  ctx.fillStyle = theme.night950
   ctx.beginPath()
   ctx.ellipse(
     centerX,
@@ -58,12 +45,12 @@ export function drawPlayer(
   ctx.fill()
   ctx.restore()
 
-  // --- Pulsing rainbow glow behind the sprite ---
+  // --- Soft moonlight glow behind the sprite ---
   ctx.save()
-  ctx.globalAlpha = 0.35 * glowAlpha
-  ctx.shadowColor = '#c9a7ff'
-  ctx.shadowBlur = 18
-  ctx.fillStyle = rainbowGradient(ctx, p.x, p.x + p.w)
+  ctx.globalAlpha = 0.4 * glowAlpha
+  ctx.shadowColor = theme.lilac300
+  ctx.shadowBlur = 22
+  ctx.fillStyle = withAlpha(theme.lilac300, 0.9)
   roundRect(ctx, p.x - 4, p.y - 4, p.w + 8, p.h + 8, BORDER_RADIUS + 4)
   ctx.fill()
   ctx.restore()
@@ -75,7 +62,7 @@ export function drawPlayer(
   ctx.translate(-p.w / 2, -p.h / 2)
 
   if (!assets?.player1) {
-    ctx.fillStyle = '#f0f8ff'
+    ctx.fillStyle = theme.moon50
     roundRect(ctx, 0, 0, p.w, p.h, BORDER_RADIUS)
     ctx.fill()
     ctx.restore()
@@ -90,7 +77,7 @@ export function drawPlayer(
   ctx.restore()
 
   ctx.lineWidth = BORDER_WIDTH
-  ctx.strokeStyle = rainbowGradient(ctx, 0, p.w)
+  ctx.strokeStyle = withAlpha(theme.moon50, 0.9)
   roundRect(ctx, 0, 0, p.w, p.h, BORDER_RADIUS)
   ctx.stroke()
 

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { STAGES } from '../constants/stages'
-import { clampStageIndex } from '../logic/gameMachine'
+import { clampStageIndex, isWorldPaused } from '../logic/gameMachine'
+import { gameStore } from '../logic/gameStore.instance'
 
 type NavigationHookProps = {
   setStageIndex: (index: number) => void
@@ -54,6 +55,9 @@ export function useDevNavigation({
       ) {
         return
       }
+
+      // Don't jump stages while a conversation or question is open.
+      if (isWorldPaused(gameStore.getState().phase)) return
 
       if (e.key === '1') {
         nextStage()

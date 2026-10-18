@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback, type RefObject } from 'react'
 import type { LoaderAudioAssets, StageConfig } from '../types'
 import { resolveStageAudioKey } from '../utils/audioResolver'
+import { soundSettings, useMuted } from '../audio/soundSettings'
 
 export default function useAudioManager(opts: {
   audioRef: RefObject<LoaderAudioAssets | null>
@@ -13,10 +14,13 @@ export default function useAudioManager(opts: {
   const audioUnlockedRef = useRef(false)
   const currentAudioRef = useRef<HTMLAudioElement | null>(null)
   const [showEnableAudio, setShowEnableAudio] = useState(false)
+  const muted = useMuted()
 
   // stable function to try to play audio
   const tryPlayAudio = useCallback(async (audio?: HTMLAudioElement | null) => {
     if (!audio) return false
+    // Muted means silent, not "failed": nothing to report.
+    if (soundSettings.getState().muted) return true
     try {
       audio.loop = true
       audio.volume = 0.6
@@ -128,6 +132,17 @@ export default function useAudioManager(opts: {
       })
     }
   }, [stage, assetsLoaded, audioRef, getAudioForStage, tryPlayAudio])
+
+  // The mute toggle silences music immediately and resumes it when switched back.
+  useEffect(() => {
+    const audio = currentAudioRef.current
+    if (!audio) return
+    if (muted) {
+      audio.pause()
+    } else if (audioUnlockedRef.current) {
+      void tryPlayAudio(audio)
+    }
+  }, [muted, tryPlayAudio])
 
   useEffect(() => {
     return () => {

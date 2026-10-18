@@ -20,16 +20,16 @@ page.on('pageerror', (e) => trace.push({ pageerror: String(e) }))
 async function readState() {
   return page.evaluate(() => {
     const frame = document.querySelector('.game-frame')
-    const popupEl = frame?.querySelector('div[style*="z-index: 1000"]')
-    const popupImg = popupEl?.querySelector('img')
+    const popupEl = frame?.querySelector('.scrim--popup')
     return {
       stage: document.querySelector('.stage-selector-current')?.textContent,
       progress: window.localStorage.getItem(
         'amaras-einhorn-schule:progress:v1'
       ),
-      choices: frame?.querySelectorAll('.choice-btn').length ?? 0,
+      choices: frame?.querySelectorAll('.choice').length ?? 0,
+      dialogue: Boolean(frame?.querySelector('.dialogue')),
       popup: popupEl
-        ? (popupImg?.getAttribute('alt') ?? popupEl.textContent?.trim())
+        ? (popupEl.querySelector('.popup__title, .ending__title')?.textContent ?? '?')
         : null,
     }
   })
@@ -41,7 +41,7 @@ async function snap(label, extra = {}) {
 
 async function popupGone() {
   await page.waitForFunction(
-    () => !document.querySelector('.game-frame div[style*="z-index: 1000"]'),
+    () => !document.querySelector('.game-frame .scrim--popup'),
     null,
     { timeout: WAIT_POPUP_GONE_MS }
   )
@@ -57,11 +57,16 @@ async function clickNpc(npc) {
     box.x + (npc.x / size.w) * box.width,
     box.y + (npc.y / size.h) * box.height
   )
-  await page.waitForSelector('.game-frame .choice-btn', { timeout: 15000 })
+  // Greeting first (the first Enter finishes the typing, the second moves on).
+  await page.waitForSelector('.game-frame .dialogue', { timeout: 15000 })
+  await snap(`${npc.id}:talking`)
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Enter')
+  await page.waitForSelector('.game-frame .choice', { timeout: 15000 })
 }
 
 async function pick(index) {
-  await page.locator('.game-frame .choice-btn').nth(index).click()
+  await page.locator('.game-frame .choice').nth(index).click()
 }
 
 await page.goto(baseUrl)
@@ -93,7 +98,7 @@ for (let si = 0; si < stages.length; si++) {
     const npc = stage.npcs[ni]
     await clickNpc(npc)
     const prompt = await page
-      .locator('.game-frame h3')
+      .locator('.game-frame .question__prompt')
       .first()
       .textContent()
     await snap(`${npc.id}:asking`, { prompt })
@@ -119,16 +124,9 @@ for (let si = 0; si < stages.length; si++) {
       await snap('after-reload')
     } else if (si === stages.length - 1 && ni === stage.npcs.length - 1) {
       // WIN popup, then GAME_END popup that needs a manual close.
-      await page.waitForFunction(
-        () =>
-          /SPIEL ENDE|Einhornschule|Ende/i.test(
-            document.querySelector('.game-frame')?.innerText ?? ''
-          ) || document.querySelector('.game-frame button.choice-btn'),
-        null,
-        { timeout: 15000 }
-      )
+      await page.waitForSelector('.game-frame .ending', { timeout: 15000 })
       await snap('game-end')
-      await page.locator('.game-frame button.choice-btn').click()
+      await page.locator('.game-frame .ending .btn').click()
       await snap('after-restart')
     } else {
       await popupGone()

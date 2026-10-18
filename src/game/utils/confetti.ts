@@ -1,10 +1,11 @@
+// Same hues as the design tokens (src/styles/tokens.css): rose, gold, mint,
+// lilac, moonlight.
 export const CONFETTI_COLORS = [
-  '#FF4FB8',
-  '#FFD166',
-  '#8A5CF6',
-  '#C9A7FF',
-  '#7BE0D6',
-  '#FF8AD4',
+  '#ff7ec7',
+  '#ffd166',
+  '#7be0d6',
+  '#c9a7ff',
+  '#fff4e1',
 ]
 
 export type ConfettiPiece = {
