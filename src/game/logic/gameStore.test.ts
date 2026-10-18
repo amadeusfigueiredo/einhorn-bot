@@ -59,6 +59,8 @@ describe('full playthrough', () => {
 
       stage.npcs!.forEach((npc, i) => {
         game().interact({ kind: 'npc', id: npc.id })
+        expect(game().phase).toBe('talking')
+        game().beginAsking()
         expect(game().phase).toBe('asking')
 
         game().answer(npc.question.correctIndex)
@@ -101,6 +103,7 @@ describe('wrong answers', () => {
     const npc = STAGES[0].npcs![0]
 
     store.getState().interact({ kind: 'npc', id: npc.id })
+    store.getState().beginAsking()
     store.getState().answer((npc.question.correctIndex + 1) % 4)
     expect(store.getState().popup?.id).toBe('TRY_AGAIN')
     expect(savedProgress()).toBeNull()
@@ -116,9 +119,11 @@ describe('wrong answers', () => {
     const [a, b] = STAGES[0].npcs!
 
     store.getState().interact({ kind: 'npc', id: a.id })
+    store.getState().beginAsking()
     store.getState().answer((a.question.correctIndex + 1) % 4) // 5s popup
     timers.advance(3000)
     store.getState().interact({ kind: 'npc', id: b.id })
+    store.getState().beginAsking()
     store.getState().answer(b.question.correctIndex) // WIN until t=7000
 
     timers.advance(2000) // t=5000: the stale TRY_AGAIN timer fires
@@ -146,6 +151,7 @@ describe('persistence', () => {
     const { store, timers } = setup()
     const npc = STAGES[0].npcs![0]
     store.getState().interact({ kind: 'npc', id: npc.id })
+    store.getState().beginAsking()
     store.getState().answer(npc.question.correctIndex)
     expect(timers.pending()).toBe(1)
     store.getState().dispose()

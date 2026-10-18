@@ -17,8 +17,10 @@ import {
 
 export type GameActions = {
   dispatch: (event: GameEvent) => void
-  /** Start a conversation and go straight to the question. */
+  /** Start a conversation with an NPC (the greeting; the question comes next). */
   interact: (key: QuestionKey) => void
+  /** Finish the greeting and show the question. */
+  beginAsking: () => void
   answer: (choiceIndex: number) => void
   restart: () => void
   jumpToStage: (stageIndex: number) => void
@@ -81,10 +83,8 @@ export function createGameStore(options: GameStoreOptions): GameStore {
       }
     },
 
-    interact: (key) => {
-      get().dispatch({ type: 'TALK', key })
-      get().dispatch({ type: 'BEGIN_ASKING' })
-    },
+    interact: (key) => get().dispatch({ type: 'TALK', key }),
+    beginAsking: () => get().dispatch({ type: 'BEGIN_ASKING' }),
     answer: (choiceIndex) => get().dispatch({ type: 'ANSWER', choiceIndex }),
     restart: () => get().dispatch({ type: 'RESTART' }),
     jumpToStage: (stageIndex) =>

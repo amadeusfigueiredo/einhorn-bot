@@ -1,16 +1,8 @@
-:root {
-  --unicorn-violet: #8a5cf6;
-  --unicorn-violet-deep: #6d3fc9;
-  --unicorn-pink: #ff8ad4;
-  --unicorn-pink-hot: #ff4fb8;
-  --unicorn-lavender: #c9a7ff;
-  --unicorn-gold: #ffd166;
-  --unicorn-mint: #7be0d6;
-  --unicorn-cream: #fff7fd;
-  --unicorn-ink: #4a2e6e;
-}
+@import './styles/tokens.css';
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -22,38 +14,49 @@ body {
 }
 
 body {
-  font-family: 'Fredoka', 'Baloo 2', system-ui, sans-serif;
-  color: var(--unicorn-ink);
-  background: radial-gradient(
-      circle at 15% 20%,
-      rgba(255, 255, 255, 0.55) 0,
-      rgba(255, 255, 255, 0) 6%
-    ),
-    radial-gradient(
-      circle at 85% 15%,
-      rgba(255, 255, 255, 0.45) 0,
-      rgba(255, 255, 255, 0) 5%
-    ),
-    radial-gradient(
-      circle at 60% 70%,
-      rgba(255, 255, 255, 0.4) 0,
-      rgba(255, 255, 255, 0) 4%
-    ),
-    radial-gradient(
-      circle at 30% 85%,
-      rgba(255, 255, 255, 0.5) 0,
-      rgba(255, 255, 255, 0) 5%
-    ),
-    linear-gradient(
-      160deg,
-      #efe3ff 0%,
-      #f6d9f4 35%,
-      #ffe1ee 65%,
-      #e6d4ff 100%
-    );
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  color: var(--text);
+  background-color: var(--bg);
+  /* A faint horizon glow and a few fixed stars: the page itself is dusk. */
+  background-image:
+    radial-gradient(ellipse 80% 45% at 50% 105%, rgb(255 126 199 / 0.22), transparent 70%),
+    radial-gradient(ellipse 70% 50% at 50% -10%, rgb(142 107 224 / 0.35), transparent 70%),
+    radial-gradient(circle at 12% 18%, rgb(255 244 225 / 0.9) 0 1px, transparent 2px),
+    radial-gradient(circle at 83% 12%, rgb(255 244 225 / 0.8) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 64% 28%, rgb(255 244 225 / 0.6) 0 1px, transparent 2px),
+    radial-gradient(circle at 28% 40%, rgb(255 244 225 / 0.7) 0 1px, transparent 2px),
+    radial-gradient(circle at 92% 55%, rgb(255 244 225 / 0.7) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 6% 72%, rgb(255 244 225 / 0.6) 0 1px, transparent 2px);
   background-attachment: fixed;
   overflow-x: hidden;
 }
+
+button,
+input {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Shell ------------------------------------------------------------ */
 
 .app-shell {
   min-height: 100vh;
@@ -61,8 +64,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding-bottom: 24px;
+  gap: var(--space-2);
+  padding-bottom: var(--space-5);
 }
 
 .top-bar {
@@ -71,123 +74,46 @@ body {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px;
-  padding: 18px 8px 4px;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-2) var(--space-1);
 }
 
 .app-header {
   text-align: left;
-  padding: 0;
 }
 
 .app-title {
   margin: 0;
-  font-family: 'Baloo 2', 'Fredoka', system-ui, sans-serif;
-  font-weight: 800;
-  font-size: clamp(1.6rem, 4vw, 2.6rem);
-  letter-spacing: 0.5px;
-  background: linear-gradient(
-    90deg,
-    var(--unicorn-violet-deep),
-    var(--unicorn-pink-hot) 45%,
-    var(--unicorn-gold) 75%,
-    var(--unicorn-violet-deep)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: 0 2px 18px rgba(157, 91, 255, 0.25);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-xl);
+  line-height: var(--lh-display);
+  letter-spacing: 0.01em;
+  color: var(--text);
+  text-shadow: 0 0 22px rgb(255 126 199 / 0.55);
 }
 
 .app-subtitle {
-  margin: 2px 0 0;
-  font-size: clamp(0.8rem, 1.6vw, 1rem);
-  color: var(--unicorn-violet-deep);
-  opacity: 0.75;
-  font-weight: 500;
+  margin: var(--space-1) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-soft);
 }
 
-.game-frame {
-  position: relative;
-  padding: 6px;
-  border-radius: 26px;
-  background: linear-gradient(
-    120deg,
-    var(--unicorn-pink),
-    var(--unicorn-lavender),
-    var(--unicorn-violet),
-    var(--unicorn-gold)
-  );
-  box-shadow:
-    0 12px 40px rgba(138, 92, 246, 0.35),
-    0 4px 12px rgba(255, 79, 184, 0.25);
-}
-
-.game-frame canvas {
-  display: block;
-  border-radius: 20px;
-  background: #1a1330;
-  max-width: 100%;
-  height: auto;
-  touch-action: none;
-  cursor: pointer;
-}
-
-/* On-screen D-pad: not shown on any device. Touch plays via tap-to-move/
-   tap-to-talk, desktop plays via the keyboard - the D-pad was redundant
-   clutter on both, so it stays in the DOM (harmless) but hidden. */
-.move-controls {
-  display: none;
-}
-
-.move-btn {
-  border: none;
-  border-radius: 14px;
-  background: linear-gradient(145deg, var(--unicorn-violet), var(--unicorn-pink-hot));
-  color: #fff;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(138, 92, 246, 0.45);
-  -webkit-tap-highlight-color: transparent;
-  touch-action: none;
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
-}
-
-.move-btn:active {
-  transform: scale(0.9);
-  box-shadow: 0 2px 4px rgba(138, 92, 246, 0.45);
-}
-
-.move-btn-up {
-  grid-area: up;
-}
-.move-btn-left {
-  grid-area: left;
-}
-.move-btn-down {
-  grid-area: down;
-}
-.move-btn-right {
-  grid-area: right;
-}
+/* ---- Dev stage selector ------------------------------------------------ */
 
 .stage-selector-panel {
-  font-family: 'Fredoka', system-ui, sans-serif;
-  background: linear-gradient(160deg, #fff7fd 0%, #f6e6ff 100%);
-  border: 2px solid rgba(138, 92, 246, 0.35);
-  border-radius: 14px;
-  padding: 8px 14px;
-  box-shadow: 0 4px 14px rgba(138, 92, 246, 0.25);
   display: flex;
-  flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  flex-shrink: 0;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+  box-shadow: var(--glow-panel);
+  backdrop-filter: blur(10px);
+  flex: 0 1 auto;
+  max-width: 100%;
 }
 
 @media (min-width: 1200px) {
@@ -197,102 +123,569 @@ body {
 }
 
 .stage-selector-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--unicorn-violet-deep);
-}
-
-.stage-selector-btn {
-  font-family: inherit;
+  font-family: var(--font-display);
   font-weight: 600;
-  font-size: 12px;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 10px;
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--unicorn-violet), var(--unicorn-pink-hot));
-  color: #fff;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-
-.stage-selector-btn:hover {
-  transform: translateY(-1px) scale(1.04);
-  box-shadow: 0 4px 10px rgba(138, 92, 246, 0.4);
-}
-
-.stage-selector-input {
-  padding: 6px;
-  width: 64px;
-  border-radius: 8px;
-  border: 1px solid rgba(138, 92, 246, 0.35);
-  font-family: inherit;
+  color: var(--gold-400);
 }
 
 .stage-selector-current {
-  font-size: 12px;
-  color: var(--unicorn-violet-deep);
-  opacity: 0.85;
+  color: var(--text-soft);
+  font-size: var(--fs-sm);
 }
 
-.sound-button {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 999;
-  padding: 6px 10px;
-  border-radius: 10px;
-  cursor: pointer;
-  border: none;
-  background: linear-gradient(135deg, #ff8ad4, #ffd166);
-  color: #5a3a86;
+.stage-selector-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--dusk-600);
+  color: var(--text);
+  font-family: var(--font-display);
   font-weight: 600;
-  font-family: 'Fredoka', system-ui, sans-serif;
-  box-shadow: 0 2px 8px rgba(138, 92, 246, 0.3);
-  transition: transform 0.12s ease;
+  cursor: pointer;
+  transition: background var(--dur-quick) var(--ease-settle),
+    transform var(--dur-quick) var(--ease-settle);
 }
 
-.sound-button:hover {
-  transform: translateY(-1px) scale(1.05);
+.stage-selector-btn:hover {
+  background: var(--rose-400);
+  color: var(--on-action);
 }
 
-.choice-btn {
-  font-family: 'Fredoka', system-ui, sans-serif !important;
+.stage-selector-btn:active {
+  transform: scale(0.94);
 }
 
-.choice-btn:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 16px rgba(138, 92, 246, 0.3) !important;
-  border-color: var(--unicorn-pink-hot) !important;
+.stage-selector-input {
+  width: 84px;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--dusk-600);
+  background: var(--night-950);
+  color: var(--text);
 }
 
-.confetti-burst {
+/* ---- Game frame --------------------------------------------------------- */
+
+.game-frame {
+  position: relative;
+  margin: var(--space-4) auto;
+  max-width: 98vw;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--night-950);
+  box-shadow: var(--glow-panel);
+}
+
+.game-frame canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  touch-action: none;
+  cursor: pointer;
+  background: var(--night-950);
+}
+
+.game-frame[data-feedback='wrong'] canvas {
+  animation: gentle-shake 420ms var(--ease-settle);
+}
+
+@keyframes gentle-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+/* The on-screen D-pad stays hidden: touch plays via tap-to-move/tap-to-talk,
+   desktop via the keyboard. */
+.move-controls {
+  display: none;
+}
+
+/* ---- Sound toggle ------------------------------------------------------- */
+
+.sound-toggle {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: var(--glow-panel);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-display);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--dur-quick) var(--ease-settle);
+}
+
+.sound-toggle:hover {
+  transform: translateY(-1px);
+}
+
+.sound-toggle[aria-pressed='true'] {
+  color: var(--text-soft);
+}
+
+/* ---- Overlays: shared --------------------------------------------------- */
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgb(27 16 51 / 0.62);
+  backdrop-filter: blur(3px);
+}
+
+.scrim--popup {
+  z-index: 30;
+  background: rgb(27 16 51 / 0.5);
+}
+
+.card {
+  width: min(600px, 100%);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: var(--glow-panel);
+  backdrop-filter: blur(14px);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 52px;
+  padding: 0 var(--space-6);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--action);
+  color: var(--on-action);
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--glow-rose);
+  transition: transform var(--dur-quick) var(--ease-settle);
+}
+
+.btn:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+/* ---- Dialogue ----------------------------------------------------------- */
+
+.dialogue {
+  position: absolute;
+  /* Centred with margins, not a transform: Motion owns `transform` here. */
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  bottom: var(--space-5);
+  z-index: 10;
+  width: min(720px, calc(100% - var(--space-5)));
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: var(--glow-panel), var(--glow-gold);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+}
+
+.dialogue__portrait {
+  width: 84px;
+  height: 84px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  box-shadow: var(--glow-gold);
+}
+
+.dialogue__speaker {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--gold-400);
+}
+
+.dialogue__text {
+  margin: var(--space-1) 0 0;
+  font-size: var(--fs-md);
+  max-width: 44ch;
+  min-height: calc(var(--fs-md) * var(--lh-body) * 2);
+}
+
+.dialogue__next {
+  grid-column: 1 / -1;
+  justify-self: end;
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-soft);
+}
+
+/* ---- Question card ------------------------------------------------------ */
+
+.question {
+  position: relative;
+  width: min(640px, 100%);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--panel-solid);
+  box-shadow: var(--glow-panel);
+  /* The one aurora edge in the whole UI: the question is what matters. */
+  background-image: linear-gradient(var(--panel-solid), var(--panel-solid)),
+    linear-gradient(100deg, var(--rose-400), var(--gold-400), var(--mint-400), var(--lilac-300));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  border: 3px solid transparent;
+}
+
+.question__prompt {
+  margin: 0 0 var(--space-5);
+  max-width: 32ch;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  line-height: 1.3;
+}
+
+.question__choices {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  min-height: 60px;
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--dusk-600);
+  color: var(--text);
+  font-size: var(--fs-md);
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--dur-quick) var(--ease-settle),
+    background var(--dur-quick) var(--ease-settle),
+    border-color var(--dur-quick) var(--ease-settle);
+}
+
+.choice:hover,
+.choice:focus-visible {
+  transform: translateX(4px);
+  background: var(--dusk-400);
+  border-color: var(--rose-400);
+}
+
+.choice__letter {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background: var(--night-950);
+  color: var(--gold-400);
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+/* ---- Feedback popup ----------------------------------------------------- */
+
+.popup {
+  position: relative;
+  width: min(420px, 100%);
+  padding: var(--space-5) var(--space-6) var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: var(--glow-panel);
+  backdrop-filter: blur(14px);
+  text-align: center;
+}
+
+.popup--win {
+  box-shadow: var(--glow-panel), var(--glow-mint);
+}
+
+.popup--wrong {
+  box-shadow: var(--glow-panel), 0 0 28px rgb(201 167 255 / 0.5);
+}
+
+.popup__image {
+  display: block;
+  max-width: min(220px, 60%);
+  max-height: 220px;
+  margin: 0 auto var(--space-3);
+  border-radius: var(--radius-md);
+}
+
+.popup__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  line-height: var(--lh-display);
+}
+
+.popup--win .popup__title {
+  color: var(--mint-400);
+}
+
+.popup--wrong .popup__title {
+  color: var(--lilac-300);
+}
+
+.popup__text {
+  text-wrap: balance;
+  margin: var(--space-2) auto 0;
+  max-width: 28ch;
+  font-size: var(--fs-md);
+  color: var(--text-soft);
+}
+
+/* ---- Sparkles (DOM burst behind the win popup) ------------------------- */
+
+.sparkle-burst {
   position: absolute;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  border-radius: inherit;
 }
 
-.confetti-piece {
+.sparkle {
   position: absolute;
-  top: -16px;
-  width: 9px;
-  height: 16px;
-  border-radius: 2px;
-  opacity: 0.95;
-  animation-name: confetti-fall;
-  animation-timing-function: ease-in;
-  animation-fill-mode: forwards;
-  animation-iteration-count: 2;
+  bottom: 30%;
+  width: 10px;
+  height: 10px;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  opacity: 0;
+  animation: sparkle-rise 1.6s var(--ease-settle) forwards;
 }
 
-@keyframes confetti-fall {
+@keyframes sparkle-rise {
   0% {
-    transform: translate(0, -10px) rotate(0deg);
+    transform: translate(0, 0) scale(0.4) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
     opacity: 1;
   }
   100% {
-    transform: translate(var(--drift), 420px) rotate(540deg);
+    transform: translate(var(--drift), -240px) scale(1.2) rotate(180deg);
     opacity: 0;
+  }
+}
+
+/* ---- Ending ------------------------------------------------------------- */
+
+.ending {
+  text-align: center;
+  width: min(560px, 100%);
+}
+
+.ending__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-display);
+  color: var(--gold-400);
+  text-shadow: var(--glow-gold);
+}
+
+.ending__text {
+  text-wrap: balance;
+  margin: var(--space-3) auto var(--space-5);
+  max-width: 30ch;
+  font-size: var(--fs-md);
+  color: var(--text-soft);
+}
+
+.ending__image {
+  display: block;
+  max-width: min(260px, 60%);
+  max-height: 240px;
+  margin: 0 auto var(--space-4);
+  border-radius: var(--radius-md);
+}
+
+.ending__stars {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-xl);
+  color: var(--gold-400);
+}
+
+/* ---- Stage title card --------------------------------------------------- */
+
+.stage-card {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  display: grid;
+  place-content: center;
+  gap: var(--space-2);
+  text-align: center;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgb(27 16 51 / 0.82), rgb(27 16 51 / 0.45) 70%);
+}
+
+.stage-card__stage {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  line-height: var(--lh-display);
+  text-shadow: var(--glow-rose);
+}
+
+.stage-card__subject {
+  margin: 0;
+  font-size: var(--fs-lg);
+  color: var(--text-soft);
+}
+
+.stage-card__stars {
+  margin: 0;
+  font-size: var(--fs-xl);
+  color: var(--gold-400);
+  letter-spacing: 0.2em;
+}
+
+/* ---- Loading ------------------------------------------------------------ */
+
+.loading {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-4);
+  background: var(--night-950);
+  text-align: center;
+}
+
+.loading__star {
+  font-size: 4rem;
+  line-height: 1;
+  color: var(--gold-400);
+  text-shadow: var(--glow-gold);
+  animation: twinkle 1.6s var(--ease-float) infinite;
+}
+
+.loading__text {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    transform: scale(0.85) rotate(0deg);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.15) rotate(20deg);
+    opacity: 1;
+  }
+}
+
+/* ---- Small screens ------------------------------------------------------ */
+
+@media (max-width: 640px) {
+  .app-title {
+    font-size: 1.75rem;
+  }
+
+  /* The jump-to-stage field is a testing tool: keep only prev/next on phones. */
+  .stage-selector-input,
+  .stage-selector-title,
+  .stage-selector-panel .stage-selector-btn:last-child {
+    display: none;
+  }
+
+  .card,
+  .question {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .dialogue {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    bottom: var(--space-3);
+  }
+
+  .dialogue__portrait {
+    width: 64px;
+    height: 64px;
+  }
+
+  .choice {
+    min-height: 56px;
+  }
+
+  .sound-toggle__label {
+    display: none;
+  }
+}
+
+/* ---- Reduced motion ----------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .sparkle {
+    display: none;
   }
 }

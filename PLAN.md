@@ -16,5 +16,13 @@
 - 28 new unit tests, including a full 15-stage playthrough to the ending.
 - Playwright playthrough before/after: traces identical (141 entries).
 
-## Phase 1: design system and 2D polish (in progress)
-See `DESIGN.md`.
+## Phase 1: design system and 2D polish (done)
+- `DESIGN.md`: three art directions, "Dämmerlicht" (twilight glass) chosen.
+- Tokens in `src/styles/tokens.css`, shared with canvas drawing via
+  `canvasTheme.ts`.
+- Motion UI: typed dialogue, question card, feedback popups, stage title card,
+  loading and ending screens; rising sparkles, gentle shake on wrong answers,
+  eased walking.
+- Mute toggle with synthesised effects (`CREDITS.md`).
+- Keyboard, focus, reduced-motion, contrast and mobile layout checked.
+- Numbers and open questions in `NOTES.md`; screenshots in `docs/screenshots`.

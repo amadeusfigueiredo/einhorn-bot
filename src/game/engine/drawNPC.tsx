@@ -1,6 +1,7 @@
 import type { LoaderImageAssets, NPC } from '../types'
 import { roundRect } from '../utils/roundRect'
 import { computeNpcAnimation } from '../utils/npcAnimation'
+import { canvasTheme, withAlpha } from '../../styles/canvasTheme'
 
 export type NpcRenderAnim = {
   t: number
@@ -8,6 +9,7 @@ export type NpcRenderAnim = {
   isHovered: boolean
   /** Portrait size cap in canvas px - bumped up on portrait/mobile canvases. */
   maxDisplayWidth?: number
+  reduceMotion?: boolean
 }
 
 const DEFAULT_MAX_DISPLAY_WIDTH = 128
@@ -34,9 +36,13 @@ export function drawNPC(
   const BORDER_WIDTH = 4
   let imgDrawn = false
 
-  const { scale, glowAlpha } = answeredNpc
+  const theme = canvasTheme()
+  const animated = answeredNpc
     ? { scale: 1, glowAlpha: 0 }
     : computeNpcAnimation({ t: anim.t, isSelected: anim.isSelected, isHovered: anim.isHovered })
+  // Reduced motion: keep the glow (it marks who you can talk to) but stop the pulsing.
+  const scale = anim.reduceMotion ? 1 : animated.scale
+  const glowAlpha = anim.reduceMotion && animated.glowAlpha > 0 ? 0.8 : animated.glowAlpha
 
   const maxDisplayWidth = anim.maxDisplayWidth ?? DEFAULT_MAX_DISPLAY_WIDTH
 
@@ -47,10 +53,10 @@ export function drawNPC(
     // Glow ring behind the portrait when selected/hovered
     if (glowAlpha > 0) {
       ctx.save()
-      ctx.globalAlpha = 0.55 * glowAlpha
-      ctx.shadowColor = '#ffd166'
-      ctx.shadowBlur = 22
-      ctx.fillStyle = 'rgba(255, 209, 102, 0.9)'
+      ctx.globalAlpha = 0.6 * glowAlpha
+      ctx.shadowColor = theme.gold400
+      ctx.shadowBlur = 26
+      ctx.fillStyle = withAlpha(theme.gold400, 0.9)
       roundRect(
         ctx,
         x - (displayW / 2) * scale - 6,
@@ -76,15 +82,11 @@ export function drawNPC(
     ctx.restore()
 
     ctx.save()
+    // Answered unicorns settle into a quiet outline; open ones keep a moon-lit one.
     ctx.lineWidth = BORDER_WIDTH
-    const gradient = ctx.createLinearGradient(0, 0, displayW, 0)
-    gradient.addColorStop(0, '#FF00A0')
-    gradient.addColorStop(0.25, '#FFD700')
-    gradient.addColorStop(0.5, '#00FFFF')
-    gradient.addColorStop(0.75, '#5D3FD3')
-    gradient.addColorStop(1, '#FF69B4')
-    ctx.strokeStyle = gradient
-
+    ctx.strokeStyle = answeredNpc
+      ? withAlpha(theme.moon300, 0.35)
+      : withAlpha(theme.moon50, 0.85)
     roundRect(ctx, 0, 0, displayW, displayH, BORDER_RADIUS)
     ctx.stroke()
     ctx.restore()
@@ -117,7 +119,7 @@ export function drawNPC(
     ctx.scale(scale, scale)
     ctx.beginPath()
     ctx.arc(0, 0, r, 0, Math.PI * 2)
-    ctx.fillStyle = answeredNpc ? '#c8cbd1' : '#ffe8ff'
+    ctx.fillStyle = answeredNpc ? theme.moon300 : theme.moon50
     ctx.fill()
 
     ctx.beginPath()
@@ -125,7 +127,7 @@ export function drawNPC(
     ctx.lineTo(10, -r + 8)
     ctx.lineTo(-10, -r + 8)
     ctx.closePath()
-    ctx.fillStyle = answeredNpc ? '#694ac4ff' : '#e4a8f3ff'
+    ctx.fillStyle = answeredNpc ? theme.dusk600 : theme.rose400
     ctx.fill()
     ctx.restore()
   }
