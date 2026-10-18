@@ -1,20 +1,12 @@
-import { useMemo, useState } from 'react'
-import { STAGES, buildStages } from '../constants/stages'
-import { useDevNavigation, clampStageIndex } from './useDevNavigation'
+import { useMemo } from 'react'
+import { buildStages } from '../constants/stages'
+import { useDevNavigation } from './useDevNavigation'
 import { useCanvasSize } from './useCanvasSize'
-import { loadProgress } from '../utils/progressStorage'
+import { gameStore, useGame } from '../logic/gameStore.instance'
 import type { StageConfig } from '../types'
 
 export function useStageController() {
-  // Read once, at mount: the saved stage (and, if it still matches, which
-  // NPCs were already answered there) so a reload picks up where you left off.
-  const [initialProgress] = useState(() =>
-    loadProgress(typeof window === 'undefined' ? null : window.localStorage)
-  )
-
-  const [stageIndex, setStageIndex] = useState(() =>
-    clampStageIndex(initialProgress?.stageIndex ?? 0, STAGES.length)
-  )
+  const stageIndex = useGame((s) => s.stageIndex)
 
   const { width: canvasWidth, height: canvasHeight } = useCanvasSize()
 
@@ -26,22 +18,16 @@ export function useStageController() {
   )
   const stage: StageConfig = liveStages[stageIndex]
 
-  const [initialAnsweredIds] = useState<string[]>(() =>
-    initialProgress &&
-    clampStageIndex(initialProgress.stageIndex, STAGES.length) === stageIndex
-      ? initialProgress.answeredIds
-      : []
-  )
-
-  const nav = useDevNavigation({ setStageIndex, currentStageIndex: stageIndex })
+  const nav = useDevNavigation({
+    setStageIndex: gameStore.getState().jumpToStage,
+    currentStageIndex: stageIndex,
+  })
 
   return {
     stageIndex,
-    setStageIndex,
     stage,
     canvasWidth,
     canvasHeight,
-    initialAnsweredIds,
     ...nav,
   }
 }

@@ -27,7 +27,7 @@ export function drawScene(
   ctx: CanvasRenderingContext2D,
   stage: StageConfig,
   player: Player,
-  answered: Set<string>,
+  answered: ReadonlySet<string>,
   assets: LoaderImageAssets | undefined,
   options: DrawSceneOptions = { t: 0 }
 ) {

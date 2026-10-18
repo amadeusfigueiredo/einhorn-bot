@@ -9,18 +9,18 @@ import type {
   PlayerMotion,
 } from '../types'
 import type { StageConfig } from '../types'
+import { gameStore } from '../logic/gameStore.instance'
+import { isWorldPaused } from '../logic/gameMachine'
 
 type Params = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>
   keysRef: React.RefObject<Keys>
   stage: StageConfig
   playerRef: React.MutableRefObject<Player>
-  answeredRef: React.MutableRefObject<Set<string>>
   assetsRef: React.RefObject<LoaderImageAssets | null>
   moveTargetRef: React.MutableRefObject<MoveTarget | null>
   motionRef: React.MutableRefObject<PlayerMotion>
   hoveredNpcRef: React.MutableRefObject<string | null>
-  questionKey: { kind: 'gate' | 'npc'; id: string } | null
   onTrigger: (kind: 'gate' | 'npc', id: string) => void
   canvasWidth: number
   canvasHeight: number
@@ -32,12 +32,10 @@ export default function useGameLoop({
   keysRef,
   stage,
   playerRef,
-  answeredRef,
   assetsRef,
   moveTargetRef,
   motionRef,
   hoveredNpcRef,
-  questionKey,
   onTrigger,
   canvasWidth,
   canvasHeight,
@@ -60,14 +58,15 @@ export default function useGameLoop({
       const dt = Math.min((t - last) / 1000, 0.05)
       lastRef.current = t
 
-      // call update only when we don't have an active question overlay
-      if (!questionKey) {
+      // The world freezes while a conversation or question is open.
+      const game = gameStore.getState()
+      if (!isWorldPaused(game.phase)) {
         updateGame({
           dt,
           keys: keysRef.current ?? {},
           player: playerRef.current,
           stage,
-          answered: answeredRef.current,
+          answered: game.answered,
           onTrigger,
           moveTargetRef,
           motionRef,
@@ -81,7 +80,7 @@ export default function useGameLoop({
         ctx!,
         stage,
         playerRef.current,
-        answeredRef.current,
+        game.answered,
         assetsRef.current ?? undefined,
         {
           t: (t - startTime) / 1000,
@@ -98,5 +97,5 @@ export default function useGameLoop({
     raf = requestAnimationFrame(step)
     return () => cancelAnimationFrame(raf)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvasRef, stage, questionKey, canvasWidth, canvasHeight, ...deps])
+  }, [canvasRef, stage, canvasWidth, canvasHeight, ...deps])
 }
