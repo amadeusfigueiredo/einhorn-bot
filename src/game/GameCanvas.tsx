@@ -34,6 +34,7 @@ import { StageCard } from './ui/StageCard'
 import { LoadingScreen } from './ui/LoadingScreen'
 import { SoundToggle } from './ui/SoundToggle'
 import { useGameEffects } from './hooks/useGameEffects'
+import { useFitSize } from './hooks/useFitSize'
 import { pickGreeting } from './data/dialogue'
 import { STAGES } from './constants/stages'
 import type { Particle } from './engine/particles'
@@ -53,6 +54,7 @@ export default function GameCanvas({
 }: GameCanvasProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const keysRef = useKeys()
+  const { areaRef, fit } = useFitSize({ width: canvasWidth, height: canvasHeight })
 
   const phase = useGame((g) => g.phase)
   const activeQuestion = useGame((g) => g.activeQuestion)
@@ -236,9 +238,10 @@ export default function GameCanvas({
   const restart = gameStore.getState().restart
 
   return (
+    <div className="stage-area" ref={areaRef}>
     <div
       className="game-frame"
-      style={{ width: canvasWidth }}
+      style={{ width: fit.width }}
       data-feedback={popup?.id === 'TRY_AGAIN' ? 'wrong' : undefined}
     >
       <canvas
@@ -307,6 +310,7 @@ export default function GameCanvas({
       </AnimatePresence>
 
       {!assetsLoaded && <LoadingScreen />}
+    </div>
     </div>
   )
 }

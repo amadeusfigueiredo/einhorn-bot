@@ -54,7 +54,12 @@ export function drawHUD(
   ui = 1
 ) {
   const theme = canvasTheme()
-  const text = `${stageName}  ·  ${answeredCount} von ${required} (${total})`
+  // "(total)" only matters when more NPCs exist than are needed to advance.
+  const count =
+    total === required
+      ? `${answeredCount} von ${required}`
+      : `${answeredCount} von ${required} (${total})`
+  const text = `${stageName}  ·  ${count}`
   const cacheKey = `${ui}|${text}`
   let sprite = cache.get(cacheKey)
   if (!sprite) {
