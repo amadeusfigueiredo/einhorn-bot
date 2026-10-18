@@ -7,10 +7,8 @@ export default function App() {
   const {
     stage,
     stageIndex,
-    setStageIndex,
     canvasWidth,
     canvasHeight,
-    initialAnsweredIds,
     jumpInput,
     setJumpInput,
     handleJumpSubmit,
@@ -37,10 +35,8 @@ export default function App() {
       <GameCanvas
         stage={stage}
         stageIndex={stageIndex}
-        setStageIndex={setStageIndex}
         canvasWidth={canvasWidth}
         canvasHeight={canvasHeight}
-        initialAnsweredIds={initialAnsweredIds}
       />
     </div>
   )

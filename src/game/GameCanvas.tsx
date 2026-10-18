@@ -10,7 +10,6 @@ import QuestionOverlay from './QuestionOverlay'
 import useKeys from './hooks/useKeys'
 import useGameLoop from './hooks/useGameLoop'
 import useAudioManager from './hooks/useAudio'
-import { useGameActions } from './hooks/useGameActions'
 import { loadImageAssets, loadAudioAssets } from './utils/loader'
 import type {
   LoaderAudioAssets,
@@ -19,45 +18,37 @@ import type {
   PlayerMotion,
 } from './types'
 import type { StageConfig, Player } from './types'
-import { type PopupConfig } from './config/PopupsConfig'
+import { POPUPS } from './data/popups'
+import { gameStore, useGame } from './logic/gameStore.instance'
+import { isWorldPaused } from './logic/gameMachine'
 import PopupOverlay from './PopupOverlay'
 import { getActivePrompt } from './utils/getActivePrompt'
 import { findNpcAtPoint } from './utils/hitTest'
 import { getNpcMaxDisplayWidth } from './utils/npcDisplaySize'
 import { computePlayerSize } from './utils/playerSize'
-import { saveProgress } from './utils/progressStorage'
 import { SoundButton } from './components/SoundButton'
 import { MoveControls } from './components/MoveControls'
 
 type GameCanvasProps = {
   stage: StageConfig
   stageIndex: number
-  setStageIndex: (index: number) => void
   canvasWidth: number
   canvasHeight: number
-  /** NPCs already answered in this stage, restored from a previous session. */
-  initialAnsweredIds: string[]
 }
 
 export default function GameCanvas({
   stage,
   stageIndex,
-  setStageIndex,
   canvasWidth,
   canvasHeight,
-  initialAnsweredIds,
 }: GameCanvasProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const keysRef = useKeys()
 
-  const answeredRef = useRef(new Set<string>(initialAnsweredIds))
-  const [questionKey, setQuestionKey] = useState<{
-    kind: 'gate' | 'npc'
-    id: string
-  } | null>(null)
-
-  const [activePopupConfig, setActivePopupConfig] =
-    useState<PopupConfig | null>(null)
+  const phase = useGame((g) => g.phase)
+  const activeQuestion = useGame((g) => g.activeQuestion)
+  const popup = useGame((g) => g.popup)
+  const worldPaused = isWorldPaused(phase)
 
   const playerRef = useRef<Player>({ x: 60, y: 320, w: 56, h: 56, speed: 210 })
   const assetsRef = useRef<LoaderImageAssets | null>(null)
@@ -67,21 +58,19 @@ export default function GameCanvas({
   const hoveredNpcRef = useRef<string | null>(null)
   const [assetsLoaded, setAssetsLoaded] = useState(false)
 
-  // Only react to a *real* stageIndex change, not the initial mount: on
-  // mount, stageIndex/answeredRef already hold whatever we just restored
-  // from storage, and clearing them here would wipe out that progress.
-  // (A plain "have we mounted yet" boolean isn't enough - React's dev
-  // StrictMode intentionally re-runs the mount effect once, which would
-  // flip that boolean and wipe the restored progress on the replay.)
-  const lastHandledStageIndexRef = useRef(stageIndex)
+  // A new stage cancels any click-to-move target from the previous one.
   useEffect(() => {
-    if (lastHandledStageIndexRef.current === stageIndex) return
-    lastHandledStageIndexRef.current = stageIndex
-
-    answeredRef.current.clear()
     moveTargetRef.current = null
-    saveProgress(window.localStorage, { stageIndex, answeredIds: [] })
   }, [stageIndex])
+
+  // Once a popup closes, drop any E/Enter press that was held behind it so
+  // it can't instantly re-trigger a conversation.
+  useEffect(() => {
+    if (popup) return
+    const keys = keysRef.current
+    keys['e'] = false
+    keys['enter'] = false
+  }, [popup, keysRef])
 
   // load assets
   useEffect(() => {
@@ -119,7 +108,7 @@ export default function GameCanvas({
 
   const onTrigger = useCallback(
     (kind: 'gate' | 'npc', id: string) => {
-      setQuestionKey({ kind, id })
+      gameStore.getState().interact({ kind, id })
       if (keysRef.current) {
         // consume the keys so the same press can't re-trigger the prompt
         keysRef.current['e'] = false
@@ -134,12 +123,10 @@ export default function GameCanvas({
     keysRef,
     stage,
     playerRef,
-    answeredRef,
     assetsRef,
     moveTargetRef,
     motionRef,
     hoveredNpcRef,
-    questionKey,
     onTrigger,
     canvasWidth,
     canvasHeight,
@@ -168,7 +155,7 @@ export default function GameCanvas({
   // arrival) or just walk to the tapped spot. Keyboard/D-pad input cancels it.
   const handleCanvasPointerDown = useCallback(
     (e: PointerEvent<HTMLCanvasElement>) => {
-      if (questionKey || activePopupConfig) return
+      if (worldPaused || popup) return
       const point = canvasPointToGameSpace(e)
       if (!point) return
 
@@ -176,7 +163,7 @@ export default function GameCanvas({
         stage.npcs ?? [],
         point.x,
         point.y,
-        answeredRef.current,
+        gameStore.getState().answered,
         npcHitHalfSize
       )
 
@@ -191,8 +178,8 @@ export default function GameCanvas({
     },
     [
       stage,
-      questionKey,
-      activePopupConfig,
+      worldPaused,
+      popup,
       onTrigger,
       canvasPointToGameSpace,
       npcHitHalfSize,
@@ -210,7 +197,7 @@ export default function GameCanvas({
             stage.npcs ?? [],
             point.x,
             point.y,
-            answeredRef.current,
+            gameStore.getState().answered,
             npcHitHalfSize
           )
         : undefined
@@ -223,27 +210,8 @@ export default function GameCanvas({
     hoveredNpcRef.current = null
   }, [])
 
-  // Closing the final "you finished the game" popup starts a fresh run
-  // instead of just leaving the player parked on the last stage.
-  const handlePopupClose = useCallback(() => {
-    if (activePopupConfig?.id === 'GAME_END') {
-      setStageIndex(0)
-    }
-    setActivePopupConfig(null)
-  }, [activePopupConfig, setStageIndex])
-
-  const { resolveQuestion } = useGameActions({
-    stage,
-    stageIndex,
-    keysRef,
-    questionKey,
-    answeredRef,
-    setQuestionKey,
-    setActivePopupConfig,
-    setStageIndex,
-  })
-
-  const activePrompt = getActivePrompt(questionKey, stage)
+  const activePrompt =
+    phase === 'asking' ? getActivePrompt(activeQuestion, stage) : null
 
   const assets = assetsRef.current || ({} as LoaderImageAssets)
 
@@ -272,14 +240,14 @@ export default function GameCanvas({
         <QuestionOverlay
           prompt={activePrompt.prompt}
           choices={activePrompt.choices}
-          onPick={resolveQuestion}
+          onPick={gameStore.getState().answer}
         />
       )}
-      {activePopupConfig && assetsLoaded && (
+      {popup && assetsLoaded && (
         <PopupOverlay
           assets={assets}
-          config={activePopupConfig}
-          onClose={handlePopupClose}
+          config={POPUPS[popup.id]}
+          onClose={gameStore.getState().restart}
         />
       )}
     </div>

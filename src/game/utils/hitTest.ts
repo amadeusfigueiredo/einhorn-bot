@@ -10,7 +10,7 @@ export function findNpcAtPoint(
   npcs: NPC[],
   x: number,
   y: number,
-  answered: Set<string>,
+  answered: ReadonlySet<string>,
   hitHalfSize = DEFAULT_HIT_HALF_SIZE
 ): NPC | undefined {
   return npcs.find((npc) => {

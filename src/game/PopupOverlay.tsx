@@ -1,4 +1,4 @@
-import type { PopupConfig } from './config/PopupsConfig'
+import type { PopupConfig } from './data/popups'
 import type { LoaderImageAssets } from './types'
 import { ConfettiBurst } from './components/ConfettiBurst'
 

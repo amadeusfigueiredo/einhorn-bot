@@ -178,7 +178,7 @@ export type UpdateParams = {
   keys: Keys
   player: Player
   stage: StageConfig
-  answered: Set<string>
+  answered: ReadonlySet<string>
   onTrigger: (kind: 'gate' | 'npc', id: string) => void
   /** Click/tap-to-move target. Any manual key input cancels it. */
   moveTargetRef?: { current: MoveTarget | null }

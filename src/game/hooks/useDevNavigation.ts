@@ -1,16 +1,13 @@
 import { useState, useCallback, useEffect } from 'react'
 import { STAGES } from '../constants/stages'
+import { clampStageIndex } from '../logic/gameMachine'
 
 type NavigationHookProps = {
   setStageIndex: (index: number) => void
   currentStageIndex: number
 }
 
-/** Clamps a zero-based stage index to the valid [0, total-1] range. */
-export function clampStageIndex(index: number, total: number): number {
-  if (total <= 0) return 0
-  return Math.max(0, Math.min(index, total - 1))
-}
+export { clampStageIndex }
 
 /** Converts a 1-based (human-facing) stage number to a clamped zero-based index. */
 export function oneBasedToStageIndex(oneBased: number, total: number): number {

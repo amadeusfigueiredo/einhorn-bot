@@ -3,7 +3,7 @@ import type { Gate } from './types'
 export function drawGates(
   ctx: CanvasRenderingContext2D,
   gates: Gate[],
-  answered: Set<string>
+  answered: ReadonlySet<string>
 ) {
   for (const g of gates ?? []) {
     ctx.save()
