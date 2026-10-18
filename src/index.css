@@ -11,6 +11,7 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 body {
@@ -58,14 +59,27 @@ input {
 
 /* ---- Shell ------------------------------------------------------------ */
 
+/* The shell is exactly one screen tall: header on top, and the game takes
+   whatever space is left (see .stage-area), so it always fits without scrolling. */
 .app-shell {
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-2);
-  padding-bottom: var(--space-5);
+  padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+}
+
+.stage-area {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-2);
 }
 
 .top-bar {
@@ -171,8 +185,8 @@ input {
 
 .game-frame {
   position: relative;
-  margin: var(--space-4) auto;
-  max-width: 98vw;
+  flex: none;
+  max-width: 100%;
   overflow: hidden;
   border-radius: var(--radius-lg);
   background: var(--night-950);
@@ -181,7 +195,7 @@ input {
 
 .game-frame canvas {
   display: block;
-  max-width: 100%;
+  width: 100%;
   height: auto;
   touch-action: none;
   cursor: pointer;
@@ -636,8 +650,29 @@ input {
 /* ---- Small screens ------------------------------------------------------ */
 
 @media (max-width: 640px) {
+  .top-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-2) 0;
+  }
+
+  .app-header {
+    text-align: center;
+  }
+
   .app-title {
-    font-size: 1.75rem;
+    font-size: 1.35rem;
+  }
+
+  .app-subtitle {
+    display: none;
+  }
+
+  .stage-selector-panel {
+    align-self: center;
+    padding: var(--space-1) var(--space-3);
+    gap: var(--space-1);
   }
 
   /* The jump-to-stage field is a testing tool: keep only prev/next on phones. */
@@ -670,6 +705,37 @@ input {
 
   .sound-toggle__label {
     display: none;
+  }
+}
+
+/* Phones held sideways: every pixel of height goes to the game. */
+@media (max-height: 520px) {
+  .top-bar {
+    flex-wrap: nowrap;
+    padding: var(--space-1) var(--space-3) 0;
+    gap: var(--space-3);
+  }
+
+  .stage-selector-input,
+  .stage-selector-title,
+  .stage-selector-panel .stage-selector-btn:last-child {
+    display: none;
+  }
+
+  .sound-toggle__label {
+    display: none;
+  }
+
+  .app-title {
+    font-size: 1.25rem;
+  }
+
+  .app-subtitle {
+    display: none;
+  }
+
+  .stage-selector-panel {
+    padding: 0 var(--space-3);
   }
 }
 
