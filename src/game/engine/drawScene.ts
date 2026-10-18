@@ -11,7 +11,7 @@ import { drawBackground } from '../utils/drawBackground'
 import { drawPlayer } from '../utils/drawPlayer'
 import { HEIGHT, WIDTH } from '../constants/dimensions'
 import { roundRect } from '../utils/roundRect'
-import { getNpcMaxDisplayWidth } from '../utils/npcDisplaySize'
+import { getFigureSize } from '../utils/npcDisplaySize'
 import { drawParticles, type Particle } from './particles'
 import { canvasTheme, withAlpha } from '../../styles/canvasTheme'
 import { uiScale } from '../utils/uiScale'
@@ -60,14 +60,14 @@ export function drawScene(
       Math.hypot(cx - n.x, cy - n.y) <= (n.talkRadius ?? 80)
   )
 
-  const npcMaxDisplayWidth = getNpcMaxDisplayWidth(width, height)
+  const figureSide = getFigureSize(width, height).w
 
   for (const n of stage.npcs ?? []) {
     drawNPC(ctx, n.x, n.y, answered.has(n.id), assets, n, {
       t: options.t,
       isSelected: nearNpc?.id === n.id,
       isHovered: options.hoveredNpcId === n.id,
-      maxDisplayWidth: npcMaxDisplayWidth,
+      figureSide,
       reduceMotion: options.reduceMotion,
     })
   }
@@ -93,7 +93,7 @@ export function drawScene(
   drawHUD(ctx, hudLabel, answered.size, req, total, ui)
 
   if (nearNpc) {
-    drawTalkPrompt(ctx, nearNpc.x, nearNpc.y - 64 * ui, ui)
+    drawTalkPrompt(ctx, nearNpc.x, nearNpc.y - 64 * ui, ui, width)
   }
 }
 
@@ -104,7 +104,8 @@ function drawTalkPrompt(
   ctx: CanvasRenderingContext2D,
   cx: number,
   cy: number,
-  ui: number
+  ui: number,
+  canvasWidth: number
 ) {
   const theme = canvasTheme()
   ctx.save()
@@ -114,6 +115,9 @@ function drawTalkPrompt(
 
   const boxW = ctx.measureText(PROMPT_TEXT).width + 40 * ui
   const boxH = 48 * ui
+  // Keep the chip fully on screen when the unicorn is near an edge.
+  const margin = 8
+  cx = Math.min(Math.max(cx, boxW / 2 + margin), canvasWidth - boxW / 2 - margin)
   ctx.shadowColor = withAlpha(theme.gold400, 0.6)
   ctx.shadowBlur = 16
   ctx.fillStyle = withAlpha(theme.night800, 0.9)

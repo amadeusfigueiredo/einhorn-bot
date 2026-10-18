@@ -22,7 +22,7 @@ import { gameStore, useGame } from './logic/gameStore.instance'
 import { isWorldPaused } from './logic/gameMachine'
 import { getActivePrompt } from './utils/getActivePrompt'
 import { findNpcAtPoint } from './utils/hitTest'
-import { getNpcMaxDisplayWidth } from './utils/npcDisplaySize'
+import { getFigureSize } from './utils/npcDisplaySize'
 import { computePlayerSize } from './utils/playerSize'
 import { MoveControls } from './components/MoveControls'
 import { AnimatePresence } from 'framer-motion'
@@ -100,16 +100,13 @@ export default function GameCanvas({
     }
   }, [])
 
-  // Keep the player capped at the same size as the NPCs - recomputed
-  // whenever the canvas size changes (e.g. rotating the phone), not just once
-  // on load.
+  // The player is the same size as every NPC - recomputed whenever the canvas
+  // size changes (e.g. rotating the phone), not just once on load.
   useEffect(() => {
-    const img = assetsRef.current?.player1
-    if (!img) return
-    const { w, h } = computePlayerSize(img, canvasWidth, canvasHeight)
+    const { w, h } = computePlayerSize(canvasWidth, canvasHeight)
     playerRef.current.w = w
     playerRef.current.h = h
-  }, [assetsLoaded, canvasWidth, canvasHeight])
+  }, [canvasWidth, canvasHeight])
 
   const { enableAudioNow } = useAudioManager({
     audioRef,
@@ -164,7 +161,7 @@ export default function GameCanvas({
   // Tap hitbox needs to track the portrait's actual on-screen size (bigger
   // on portrait/mobile canvases) or taps near the edge of a big icon miss it.
   const npcHitHalfSize =
-    getNpcMaxDisplayWidth(canvasWidth, canvasHeight) / 2 + 12
+    getFigureSize(canvasWidth, canvasHeight).w / 2 + 12
 
   // Click/tap on the canvas: walk to an NPC (and auto-open its question on
   // arrival) or just walk to the tapped spot. Keyboard/D-pad input cancels it.

@@ -11,3 +11,18 @@ export function getNpcMaxDisplayWidth(
   const isPortrait = canvasHeight > canvasWidth
   return isPortrait ? PORTRAIT_MAX_DISPLAY_WIDTH : LANDSCAPE_MAX_DISPLAY_WIDTH
 }
+
+export type FigureSize = { w: number; h: number }
+
+/**
+ * Every unicorn (NPCs and the player) is drawn in the same square box, so
+ * differently-shaped source pictures all read as the same size on screen.
+ * Pictures are cropped to fit rather than stretched.
+ */
+export function getFigureSize(
+  canvasWidth: number,
+  canvasHeight: number
+): FigureSize {
+  const side = getNpcMaxDisplayWidth(canvasWidth, canvasHeight)
+  return { w: side, h: side }
+}

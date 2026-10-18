@@ -1,5 +1,6 @@
 import type { LoaderImageAssets } from '../types'
 import { roundRect } from './roundRect'
+import { coverCrop } from './coverCrop'
 import { computePlayerBob, computePlayerGlow } from './playerAnimation'
 import { canvasTheme, withAlpha } from '../../styles/canvasTheme'
 
@@ -73,7 +74,8 @@ export function drawPlayer(
   ctx.beginPath()
   roundRect(ctx, 0, 0, p.w, p.h, BORDER_RADIUS)
   ctx.clip()
-  ctx.drawImage(assets.player1, 0, 0, p.w, p.h)
+  const crop = coverCrop(assets.player1, p.w, p.h)
+  ctx.drawImage(assets.player1, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, p.w, p.h)
   ctx.restore()
 
   ctx.lineWidth = BORDER_WIDTH
