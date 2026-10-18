@@ -1,5 +1,6 @@
 import type { LoaderImageAssets, NPC } from '../types'
 import { roundRect } from '../utils/roundRect'
+import { coverCrop } from '../utils/coverCrop'
 import { computeNpcAnimation } from '../utils/npcAnimation'
 import { canvasTheme, withAlpha } from '../../styles/canvasTheme'
 
@@ -7,12 +8,12 @@ export type NpcRenderAnim = {
   t: number
   isSelected: boolean
   isHovered: boolean
-  /** Portrait size cap in canvas px - bumped up on portrait/mobile canvases. */
-  maxDisplayWidth?: number
+  /** Side of the square every portrait is drawn in (bigger on portrait/mobile canvases). */
+  figureSide?: number
   reduceMotion?: boolean
 }
 
-const DEFAULT_MAX_DISPLAY_WIDTH = 128
+const DEFAULT_FIGURE_SIDE = 128
 
 export function drawNPC(
   ctx: CanvasRenderingContext2D,
@@ -44,11 +45,13 @@ export function drawNPC(
   const scale = anim.reduceMotion ? 1 : animated.scale
   const glowAlpha = anim.reduceMotion && animated.glowAlpha > 0 ? 0.8 : animated.glowAlpha
 
-  const maxDisplayWidth = anim.maxDisplayWidth ?? DEFAULT_MAX_DISPLAY_WIDTH
+  const figureSide = anim.figureSide ?? DEFAULT_FIGURE_SIDE
 
   const drawImageWithBorder = (img: HTMLImageElement) => {
-    const displayW = Math.min(maxDisplayWidth, img.width)
-    const displayH = Math.round((img.height / img.width) * displayW)
+    // Same box for every unicorn: crop the picture to fit, never stretch it.
+    const displayW = figureSide
+    const displayH = figureSide
+    const crop = coverCrop(img, displayW, displayH)
 
     // Glow ring behind the portrait when selected/hovered
     if (glowAlpha > 0) {
@@ -78,7 +81,7 @@ export function drawNPC(
     ctx.beginPath()
     roundRect(ctx, 0, 0, displayW, displayH, BORDER_RADIUS)
     ctx.clip()
-    ctx.drawImage(img, 0, 0, displayW, displayH)
+    ctx.drawImage(img, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, displayW, displayH)
     ctx.restore()
 
     ctx.save()
@@ -113,7 +116,7 @@ export function drawNPC(
 
   // 3) final fallback: placeholder
   if (!imgDrawn) {
-    const r = 26 * (maxDisplayWidth / DEFAULT_MAX_DISPLAY_WIDTH)
+    const r = 26 * (figureSide / DEFAULT_FIGURE_SIDE)
     ctx.save()
     ctx.translate(x, y)
     ctx.scale(scale, scale)

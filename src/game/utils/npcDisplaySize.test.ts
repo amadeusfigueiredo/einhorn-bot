@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getNpcMaxDisplayWidth } from './npcDisplaySize'
+import { getFigureSize, getNpcMaxDisplayWidth } from './npcDisplaySize'
 
 describe('getNpcMaxDisplayWidth', () => {
   it('is bigger on a portrait canvas than a landscape one', () => {
@@ -17,5 +17,15 @@ describe('getNpcMaxDisplayWidth', () => {
     expect(getNpcMaxDisplayWidth(800, 800)).toBe(
       getNpcMaxDisplayWidth(1440, 810)
     )
+  })
+})
+
+describe('getFigureSize', () => {
+  it('is a square box so every figure has the same height and width', () => {
+    for (const [w, h] of [[1440, 810], [760, 1350], [800, 800]]) {
+      const size = getFigureSize(w, h)
+      expect(size.w).toBe(size.h)
+      expect(size.w).toBe(getNpcMaxDisplayWidth(w, h))
+    }
   })
 })
