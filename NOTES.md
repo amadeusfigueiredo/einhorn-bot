@@ -148,3 +148,50 @@ loop and sparkles live outside React; `GameCanvas` subscribes to `phase`,
   little; one of the two could go.
 - Music cannot start before the first click/keypress (browser rule), so the
   loading screen is silent.
+
+
+## 2D version made from the current game (`feat/2d-from-current-game`)
+
+This repo used to be an old 2D-only game (12 stages, German only). It is now
+the 2D-only version of the current game in `unicorn-school-3d`, taken from that
+repo's `main` (`git archive`), with every file that needs `three`,
+`@react-three/*`, `drei` or `postprocessing` removed. None of those packages
+is a dependency here. `public/assets` already had every 2D picture and music
+file the game uses (checked with `diff -r`); only the icons/manifest were added.
+
+### Kept
+The whole shared game layer (logic, stores, data, i18n DE/PT/EN, HUD, dialogue,
+quiz and number cards, popups, audio, stickers, "what is left" list, pause,
+wardrobe, parent corner, start menu) and the 2D drawing: `Canvas2DView`
+(classroom), `Canvas2DPlaceView` with `places/view2d` (yard, library, corridor
+and the other rooms, reached by the doors drawn in 2D or by "Go there" in the
+list of what is left), `engine/draw*`, `utils/draw*`.
+
+### Skipped (3D feature with no 2D counterpart; nothing invented in its place)
+- **Intro film**: "Let's go" on the start menu goes straight to the welcome card
+  (`introStore` is finished at once); no "Watch the intro" button.
+- **Class-change film** (corridor walk): after "Stage complete!" the still title
+  card (the reduced-motion card of the 3D game) shows for every player.
+- **Ending film** (parade): the finale card follows the last answer directly.
+- **Films of a walk through a door**: a door takes her through at once (the
+  3D game does the same with reduced motion).
+- **3D classroom with a teacher and lessons** (`LessonLayer`, the ladder): not in
+  2D, as in the 3D game with the 2D view.
+- **3D views, the 3D corridor, 3D rooms and the 3D hero previews** (start menu,
+  wardrobe): the start menu shows the hero as an emoji, the wardrobe has no
+  picture; its choices are all there.
+- The 2D/3D toggle and `view/viewMode.ts` are gone; `GameShell` is always 2D.
+- Tests of removed code were dropped; `GameShell`, `App`, `StageTransition`,
+  `StartMenu`, `Wardrobe` tests were rewritten for the 2D flow.
+
+### Risky / to look at
+- Some pure files keep their old path under `game/views/three/` (`amara/amaraLook`,
+  `amaraMoves`, `unicornMoves`, `coords`, `animals/layoutAnimals`): they have no
+  three.js import, so they stayed where the rest of the code finds them.
+- `classroom/roomData.ts` is only partly used here (the room size for animal
+  layout); its test needs the 3D classmates and was dropped, so it is the one
+  file clearly under 100 % coverage. Same for sticker data that mentions
+  activities of 3D-only rooms: they are never reached in 2D.
+- `@vitest/coverage-v8` is 4.1.12 in the lockfile while vitest is 4.1.10 (same
+  mix as in the 3D repo): vitest warns, nothing fails.
+- The bundle is one 513 kB main chunk (gzip 168 kB) plus the lazy 2D places chunk.
