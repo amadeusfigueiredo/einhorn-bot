@@ -1,4 +1,4 @@
-import type { LoaderAudioAssets, LoaderImageAssets } from '../types'
+import type { LoaderAudioAssets, LoaderImageAssets, StageConfig } from '../types'
 
 export type LoaderAssets = LoaderImageAssets & LoaderAudioAssets
 
@@ -21,13 +21,26 @@ export function makeAudio(
   try {
     const audio = new Audio(src)
     audio.loop = true
-    audio.preload = 'auto'
+    // Not downloaded until it is played (a stage's music is megabytes; the other three are never needed in that visit).
+    audio.preload = 'none'
     audio.volume = 0.8
     return audio
   } catch (e) {
     console.warn('audio creation failed for', src, e)
     return undefined
   }
+}
+
+/** What every stage draws besides its own art: the shared fourth unicorn and the player picture (2D view). */
+export const SHARED_IMAGE_KEYS = ['stage1Npc4', 'player1'] as const
+
+/**
+ * The pictures one stage needs: its background and the portraits of its unicorns, then the shared ones. Stages
+ * 13-15 reuse the art of 1-3, so they name pictures that another stage names too (loaded once, see `useStageImages`).
+ */
+export function stageImageKeys(stage: Pick<StageConfig, 'background' | 'npcs'>): Array<keyof LoaderImageAssets> {
+  const keys = [stage.background, ...(stage.npcs ?? []).map((n) => n.imageKey), ...SHARED_IMAGE_KEYS].filter((k): k is NonNullable<typeof k> => Boolean(k))
+  return [...new Set(keys)] as Array<keyof LoaderImageAssets>
 }
 
 function makeDefaultImageKeys(): Array<keyof LoaderImageAssets> {
@@ -44,8 +57,8 @@ function makeDefaultImageKeys(): Array<keyof LoaderImageAssets> {
   // special case
   keys.push('stage1Npc4')
 
-  // player + popups
-  keys.push('player1', 'winPopup', 'tryAgainPopup', 'gameEndPopup')
+  // player
+  keys.push('player1')
 
   return keys as Array<keyof LoaderImageAssets>
 }

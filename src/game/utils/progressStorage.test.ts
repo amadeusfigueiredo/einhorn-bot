@@ -36,6 +36,12 @@ describe('loadProgress', () => {
     expect(loadProgress(storage)).toBeNull()
   })
 
+  it.each(['null', '5', '"text"', 'true'])('returns null for stored %s: it is JSON, but not a progress record', (raw) => {
+    const storage = makeFakeStorage()
+    storage.setItem(PROGRESS_STORAGE_KEY, raw)
+    expect(loadProgress(storage)).toBeNull()
+  })
+
   it('returns null when the shape is wrong', () => {
     const storage = makeFakeStorage()
     storage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify({ foo: 'bar' }))
@@ -52,6 +58,30 @@ describe('loadProgress', () => {
       JSON.stringify({ stageIndex: 2, answeredIds: [1, 2] })
     )
     expect(loadProgress(storage)).toBeNull()
+  })
+})
+
+describe('the version of a save', () => {
+  const put = (value: unknown) => {
+    const storage = makeFakeStorage()
+    storage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(value))
+    return storage
+  }
+
+  it('a save of the new kind says its version, and an old one has none: both open', () => {
+    expect(loadProgress(put({ stageIndex: 3, answeredIds: ['a'], version: 2 }))).toEqual({ stageIndex: 3, answeredIds: ['a'], version: 2 })
+    expect(loadProgress(put({ stageIndex: 3, answeredIds: ['a'] }))).toEqual({ stageIndex: 3, answeredIds: ['a'] })
+  })
+
+  it('a version that is not a number is not a save', () => {
+    expect(loadProgress(put({ stageIndex: 3, answeredIds: [], version: '2' }))).toBeNull()
+    expect(loadProgress(put({ stageIndex: 3, answeredIds: [], version: null }))).toBeNull()
+  })
+
+  it('the new kind survives a round trip with its version', () => {
+    const storage = makeFakeStorage()
+    saveProgress(storage, { stageIndex: 6, answeredIds: ['x', 'y'], version: 2 })
+    expect(loadProgress(storage)).toEqual({ stageIndex: 6, answeredIds: ['x', 'y'], version: 2 })
   })
 })
 

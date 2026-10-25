@@ -3,7 +3,7 @@ import { findNpcAtPoint } from './hitTest'
 import type { NPC } from '../types'
 
 function makeNpc(id: string, x: number, y: number): NPC {
-  return { id, x, y, question: { id: `${id}Q`, prompt: 'p', choices: [], correctIndex: 0 } }
+  return { id, x, y, question: { id: `${id}Q`, correctIndex: 0 } }
 }
 
 describe('findNpcAtPoint', () => {

@@ -1,4 +1,8 @@
 import type { StageConfig } from '../game/types'
+import { useT } from '../game/i18n/useT'
+import { useGame } from '../game/logic/gameStore.instance'
+import { requiredAnswers } from '../game/logic/classProgress'
+import { difficultyText, subjectText } from '../game/i18n/phrases'
 
 type StageSelectorProps = {
   stageIndex: number
@@ -9,6 +13,8 @@ type StageSelectorProps = {
   handleJumpSubmit: () => void
   nextStage: () => void
   prevStage: () => void
+  nextQuestion: () => void
+  prevQuestion: () => void
 }
 
 export default function StageSelector({
@@ -20,28 +26,45 @@ export default function StageSelector({
   handleJumpSubmit,
   nextStage,
   prevStage,
+  nextQuestion,
+  prevQuestion,
 }: StageSelectorProps) {
+  const { t } = useT()
+  const answered = useGame((g) => g.answered.size)
+  const required = stage ? requiredAnswers(stage) : 0
   return (
     <div className="stage-selector-panel">
-      <span className="stage-selector-title">✨ Stufe</span>
+      <span className="stage-selector-title">{t('selector.title')}</span>
 
       <button
         onClick={prevStage}
         className="stage-selector-btn"
-        aria-label="Vorherige Stufe"
+        aria-label={t('selector.prev')}
       >
         ◀
       </button>
 
       <span className="stage-selector-current">
-        {`${stageIndex + 1} / ${totalStages} — ${stage?.subject ?? ''} (${stage?.difficulty ?? ''})`}
+        {`${stageIndex + 1} / ${totalStages} — ${stage ? subjectText(t, stage.subject) : ''} (${stage ? difficultyText(t, stage.difficulty) : ''})`}
       </span>
 
       <button
         onClick={nextStage}
         className="stage-selector-btn"
-        aria-label="Nächste Stufe"
+        aria-label={t('selector.next')}
       >
+        ▶
+      </button>
+
+      <button onClick={prevQuestion} className="stage-selector-btn" aria-label={t('selector.prevQuestion')}>
+        ◀
+      </button>
+
+      <span className="stage-selector-current stage-selector-question">
+        {`${t('selector.question')} ${Math.min(answered + 1, required)} / ${required}`}
+      </span>
+
+      <button onClick={nextQuestion} className="stage-selector-btn" aria-label={t('selector.nextQuestion')}>
         ▶
       </button>
 
@@ -54,12 +77,12 @@ export default function StageSelector({
         onKeyDown={(e) => {
           if (e.key === 'Enter') handleJumpSubmit()
         }}
-        placeholder='Stufe #'
+        placeholder={t('selector.placeholder')}
         className="stage-selector-input"
       />
 
       <button onClick={handleJumpSubmit} className="stage-selector-btn">
-        Los!
+        {t('selector.go')}
       </button>
     </div>
   )

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { particleAlpha, spawnSparkles, stepParticles } from './particles'
+import { drawParticles, particleAlpha, spawnSparkles, stepParticles, type Particle } from './particles'
+import { count, recorder } from '../../test/canvas'
 
 const rng = (() => {
   let i = 0
@@ -35,5 +36,40 @@ describe('sparkles', () => {
     expect(particleAlpha(p)).toBeCloseTo(1)
     p.age = p.life * 0.55
     expect(particleAlpha(p)).toBeCloseTo(0.5)
+  })
+})
+
+describe('drawParticles', () => {
+  const star = (over: Partial<Particle> = {}): Particle => ({ x: 10, y: 20, vx: 0, vy: 0, size: 4, life: 1, age: 0.5, color: '#ff0000', ...over })
+
+  it('draws nothing, and does not even touch the canvas, for no particles', () => {
+    const { ctx, calls } = recorder()
+    drawParticles(ctx, [])
+    expect(calls).toEqual([])
+  })
+
+  it('draws each particle as a four-point star in its colour and its own opacity, and puts the canvas back', () => {
+    const { ctx, calls } = recorder()
+    const a = star({ color: '#111111', age: 0.05 })
+    const b = star({ color: '#222222', age: 0.55 })
+    drawParticles(ctx, [a, b])
+    expect(count(calls, 'save')).toBe(1)
+    expect(count(calls, 'restore')).toBe(1)
+    expect(count(calls, 'beginPath')).toBe(2)
+    expect(count(calls, 'quadraticCurveTo')).toBe(8)
+    expect(count(calls, 'fill:')).toBe(2)
+    expect(calls).toContain('fillStyle=#111111')
+    expect(calls).toContain('fillStyle=#222222')
+    expect(calls).toContain(`globalAlpha=${Math.round(particleAlpha(a) * 100) / 100}`)
+    expect(calls).toContain(`globalAlpha=${Math.round(particleAlpha(b) * 100) / 100}`)
+  })
+
+  it('the points of the star are one size away from its centre', () => {
+    const { ctx, calls } = recorder()
+    drawParticles(ctx, [star({ x: 10, y: 20, size: 4 })])
+    expect(calls).toContain('moveTo:10,16')
+    expect(calls).toContain('quadraticCurveTo:10,20,14,20')
+    expect(calls).toContain('quadraticCurveTo:10,20,10,24')
+    expect(calls).toContain('quadraticCurveTo:10,20,6,20')
   })
 })

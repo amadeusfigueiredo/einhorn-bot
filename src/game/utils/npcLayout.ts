@@ -49,6 +49,17 @@ export function getNpcPosition(params: {
   return { x: Math.round(x), y: Math.round(y) }
 }
 
+/**
+ * Where the player's centre starts: the middle of the canvas, halfway between
+ * the two NPC rows, so it never starts on top of a unicorn or within talking
+ * distance of one.
+ */
+export function getStartPosition(width: number, height: number): NpcPosition {
+  const usableHeight = Math.max(height - MARGIN_TOP - MARGIN_BOTTOM, 1)
+  const rowMiddle = (ROW_BAND_TOP + ROW_BAND_BOTTOM) / 2
+  return { x: Math.round(width / 2), y: Math.round(MARGIN_TOP + usableHeight * rowMiddle) }
+}
+
 export function getNpcPositions(params: {
   total: number
   stageSeed: number

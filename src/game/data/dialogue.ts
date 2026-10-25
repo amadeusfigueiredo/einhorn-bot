@@ -1,42 +1,34 @@
 import type { Subject } from '../types'
+import { LOCALES, translate, translateList } from '../i18n/translate'
+import type { Lang } from '../i18n/language'
+import { fillName } from '../player/playerName'
 
-/** What every unicorn teacher is called in the speech box. */
-export const SPEAKER_NAME = 'Einhorn-Lehrerin'
+/** What every unicorn teacher is called in the speech box (German). */
+export const SPEAKER_NAME = translate('de', 'dialogue.speaker')
 
-// Short, simple sentences: the player is just learning to read. Each subject
-// has a few greetings so conversations don't all open the same way.
-export const GREETINGS: Record<Subject, readonly string[]> = {
-  Mathematik: [
-    'Hallo! Ich liebe Zahlen. Hilfst du mir bei einer Rechenaufgabe?',
-    'Schön, dass du da bist! Ich habe eine Zahlen-Frage für dich.',
-    'Hui, ein Besuch! Magst du mit mir rechnen?',
-  ],
-  Deutsch: [
-    'Hallo! Ich liebe Wörter. Hilfst du mir mit einer Frage?',
-    'Schön, dass du da bist! Ich habe ein Wörter-Rätsel für dich.',
-    'Hui, ein Besuch! Magst du mit mir Buchstaben knacken?',
-  ],
-  Sachunterricht: [
-    'Hallo! Ich bin neugierig auf die Welt. Weißt du mehr als ich?',
-    'Schön, dass du da bist! Ich habe eine Entdecker-Frage für dich.',
-    'Hui, ein Besuch! Magst du mit mir die Natur erforschen?',
-  ],
-  Musik: [
-    'Hallo! Hörst du die Musik? Ich habe eine Klang-Frage für dich.',
-    'Schön, dass du da bist! Lass uns zusammen Töne entdecken.',
-    'Hui, ein Besuch! Magst du mit mir ein Lied-Rätsel lösen?',
-  ],
-  'Bildende Kunst': [
-    'Hallo! Ich liebe Farben. Hilfst du mir bei einer Mal-Frage?',
-    'Schön, dass du da bist! Ich habe ein Farben-Rätsel für dich.',
-    'Hui, ein Besuch! Magst du mit mir Bilder anschauen?',
-  ],
-}
+/** German greeting templates; every language's text is in src/locales/<lang>.json. */
+export const GREETINGS: Record<Subject, readonly string[]> = LOCALES.de.greetings
 
 /** Stable pick: the same NPC always greets the same way. */
-export function pickGreeting(subject: Subject, npcId: string): string {
-  const options = GREETINGS[subject]
+export function pickGreeting(
+  subject: Subject,
+  npcId: string,
+  lang: Lang = 'de',
+  name: string | null = null
+): string {
+  const options = translateList(lang, `greetings.${subject}`)
+  return fillName(options[hashString(npcId) % options.length], name)
+}
+
+/** What a unicorn says to her in a class she has already finished: a greeting, never a question (the same unicorn always says the same). */
+export function pickRevisitGreeting(npcId: string, lang: Lang = 'de', name: string | null = null): string {
+  const options = translateList(lang, 'hall.revisit')
+  return fillName(options[hashString(npcId) % options.length], name)
+}
+
+/** Small stable hash, so the same NPC or question always gets the same line. */
+export function hashString(text: string): number {
   let hash = 0
-  for (const ch of npcId) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0
-  return options[hash % options.length]
+  for (const ch of text) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0
+  return hash
 }

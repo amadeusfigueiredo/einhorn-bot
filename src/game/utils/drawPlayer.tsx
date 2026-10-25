@@ -1,4 +1,6 @@
 import type { LoaderImageAssets } from '../types'
+import type { UnicornLook } from '../data/unicornLooks'
+import { drawUnicorn2D } from './drawUnicorn2D'
 import { roundRect } from './roundRect'
 import { coverCrop } from './coverCrop'
 import { computePlayerBob, computePlayerGlow } from './playerAnimation'
@@ -9,6 +11,8 @@ export type PlayerRenderAnim = {
   moving: boolean
   facingLeft: boolean
   reduceMotion?: boolean
+  /** Who she is: when given, the unicorn is drawn in code (as in the 3D view) instead of the picture. */
+  look?: UnicornLook
 }
 
 export function drawPlayer(
@@ -45,6 +49,16 @@ export function drawPlayer(
   )
   ctx.fill()
   ctx.restore()
+
+  // --- A look: the unicorn drawn in code, hopping and squashing like the picture did ---
+  if (anim.look) {
+    ctx.save()
+    ctx.translate(centerX, p.y + p.h + bob.offsetY)
+    ctx.scale(bob.scaleX, bob.scaleY)
+    drawUnicorn2D(ctx, anim.look, 0, 0, p.w * 1.3, { t: anim.t, facingLeft: anim.facingLeft, reduceMotion: anim.reduceMotion })
+    ctx.restore()
+    return
+  }
 
   // --- Soft moonlight glow behind the sprite ---
   ctx.save()

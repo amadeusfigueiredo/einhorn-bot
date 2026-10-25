@@ -1,28 +1,27 @@
 import { useEffect, useRef } from 'react'
-import { updateGame } from '../engine/update'
+import { stepWorld, type World } from '../logic/world'
 import { drawScene } from '../engine/drawScene'
-import type {
-  Keys,
-  LoaderImageAssets,
-  MoveTarget,
-  Player,
-  PlayerMotion,
-} from '../types'
+import type { Keys, LoaderImageAssets } from '../types'
 import type { StageConfig } from '../types'
 import { gameStore } from '../logic/gameStore.instance'
 import { isWorldPaused } from '../logic/gameMachine'
 import { stepParticles, type Particle } from '../engine/particles'
 import { smoothToward } from '../utils/smooth'
 import { prefersReducedMotion } from '../utils/prefersReducedMotion'
+import { languageSettings } from '../i18n/language'
+import { profileStore } from '../player/playerName'
+import { isTransitioning } from '../transition/transitionStore'
+import { isIntroPlaying } from '../intro/introStore'
+import { isStartMenuOpen } from '../start/startStore'
+import { isPaused } from '../pause/pauseStore'
+import { outfitSettings } from '../player/outfitSettings'
 
 type Params = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>
   keysRef: React.RefObject<Keys>
   stage: StageConfig
-  playerRef: React.MutableRefObject<Player>
+  world: World
   assetsRef: React.RefObject<LoaderImageAssets | null>
-  moveTargetRef: React.MutableRefObject<MoveTarget | null>
-  motionRef: React.MutableRefObject<PlayerMotion>
   hoveredNpcRef: React.MutableRefObject<string | null>
   particlesRef: React.MutableRefObject<Particle[]>
   onTrigger: (kind: 'gate' | 'npc', id: string) => void
@@ -35,10 +34,8 @@ export default function useGameLoop({
   canvasRef,
   keysRef,
   stage,
-  playerRef,
+  world,
   assetsRef,
-  moveTargetRef,
-  motionRef,
   hoveredNpcRef,
   particlesRef,
   onTrigger,
@@ -56,7 +53,7 @@ export default function useGameLoop({
 
     let raf = 0
     const reduceMotion = prefersReducedMotion()
-    const display = { x: playerRef.current.x, y: playerRef.current.y }
+    const display = { x: world.player.x, y: world.player.y }
     const startTime = performance.now()
     lastRef.current = startTime
 
@@ -65,25 +62,28 @@ export default function useGameLoop({
       const dt = Math.min((t - last) / 1000, 0.05)
       lastRef.current = t
 
+      // Paused: nothing moves and nothing is drawn again, until the child goes on.
+      if (isPaused()) {
+        raf = requestAnimationFrame(step)
+        return
+      }
+
       // The world freezes while a conversation or question is open.
       const game = gameStore.getState()
-      if (!isWorldPaused(game.phase)) {
-        updateGame({
+      if (!isWorldPaused(game.phase) && !profileStore.getState().modalOpen && !isTransitioning() && !isIntroPlaying() && !isStartMenuOpen()) {
+        stepWorld(world, {
           dt,
           keys: keysRef.current ?? {},
-          player: playerRef.current,
           stage,
           answered: game.answered,
           onTrigger,
-          moveTargetRef,
-          motionRef,
           canvasWidth,
           canvasHeight,
         })
       }
 
       // The sprite eases toward the logical position instead of snapping to it.
-      const player = playerRef.current
+      const player = world.player
       display.x = reduceMotion ? player.x : smoothToward(display.x, player.x, dt)
       display.y = reduceMotion ? player.y : smoothToward(display.y, player.y, dt)
       particlesRef.current = stepParticles(particlesRef.current, dt)
@@ -92,16 +92,18 @@ export default function useGameLoop({
       drawScene(
         ctx!,
         stage,
-        playerRef.current,
+        world.player,
         game.answered,
         assetsRef.current ?? undefined,
         {
           t: (t - startTime) / 1000,
-          motion: motionRef.current,
+          motion: world.motionRef.current,
           hoveredNpcId: hoveredNpcRef.current,
           playerDisplay: display,
           particles: particlesRef.current,
           reduceMotion,
+          lang: languageSettings.getState().lang,
+          outfit: outfitSettings.getState(),
           canvasWidth,
           canvasHeight,
         }

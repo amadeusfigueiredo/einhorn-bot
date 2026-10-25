@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { STAGES } from '../constants/stages'
 import { POPUPS } from '../data/popups'
+import { idsBefore } from './classProgress'
 import { createGameStore } from './gameStore'
 import { PROGRESS_STORAGE_KEY, type StorageLike } from '../utils/progressStorage'
 
@@ -72,9 +73,11 @@ describe('full playthrough', () => {
           !isLastNpc ? 'correct' : isLastStage ? 'ending' : 'nextStage'
         )
         if (!isLastNpc) {
+          // what is saved is every answer so far: the classes finished before this one, and the ones given here
           expect(savedProgress()).toEqual({
             stageIndex,
-            answeredIds: stage.npcs!.slice(0, i + 1).map((n) => n.id),
+            answeredIds: [...idsBefore(STAGES, stageIndex), ...stage.npcs!.slice(0, i + 1).map((n) => n.id)],
+            version: 2,
           })
         }
         timers.advance(POPUPS.WIN.durationMs!)
@@ -93,7 +96,7 @@ describe('full playthrough', () => {
       stageIndex: 0,
       popup: null,
     })
-    expect(savedProgress()).toEqual({ stageIndex: 0, answeredIds: [] })
+    expect(savedProgress()).toEqual({ stageIndex: 0, answeredIds: [], version: 2 })
   })
 })
 
@@ -114,7 +117,7 @@ describe('wrong answers', () => {
     expect(store.getState()).toMatchObject({ popup: null, phase: 'exploring' })
   })
 
-  it("an earlier popup's timer cannot cut a newer popup short", () => {
+  it('a second conversation cannot start while a popup is showing, and the popup keeps its full time', () => {
     const { store, timers } = setup()
     const [a, b] = STAGES[0].npcs!
 
@@ -123,13 +126,16 @@ describe('wrong answers', () => {
     store.getState().answer((a.question.correctIndex + 1) % 4) // 5s popup
     timers.advance(3000)
     store.getState().interact({ kind: 'npc', id: b.id })
-    store.getState().beginAsking()
-    store.getState().answer(b.question.correctIndex) // WIN until t=7000
+    expect(store.getState().phase).toBe('wrong')
+    expect(store.getState().activeQuestion).toBeNull()
 
-    timers.advance(2000) // t=5000: the stale TRY_AGAIN timer fires
-    expect(store.getState().popup?.id).toBe('WIN')
-    timers.advance(2000) // t=7000
+    timers.advance(1999) // t=4999
+    expect(store.getState().popup?.id).toBe('TRY_AGAIN')
+    timers.advance(1) // t=5000
     expect(store.getState().popup).toBeNull()
+
+    store.getState().interact({ kind: 'npc', id: b.id })
+    expect(store.getState().phase).toBe('talking')
   })
 })
 
@@ -141,10 +147,10 @@ describe('persistence', () => {
     expect(store.getState().answered.has(id)).toBe(true)
   })
 
-  it('jumping stages saves an empty answer list for the new stage', () => {
+  it('jumping stages saves the new stage, with the classes before it finished', () => {
     const { store, savedProgress } = setup()
     store.getState().jumpToStage(7)
-    expect(savedProgress()).toEqual({ stageIndex: 7, answeredIds: [] })
+    expect(savedProgress()).toEqual({ stageIndex: 7, answeredIds: idsBefore(STAGES, 7), version: 2 })
   })
 
   it('dispose cancels pending popup timers', () => {
@@ -156,5 +162,125 @@ describe('persistence', () => {
     expect(timers.pending()).toBe(1)
     store.getState().dispose()
     expect(timers.pending()).toBe(0)
+  })
+})
+
+describe('pausing', () => {
+  // The real timers, on a clock the test turns by hand.
+  const live = () => {
+    vi.useFakeTimers()
+    const store = createGameStore({ stages: STAGES, storage: fakeStorage(), saved: null })
+    const npc = STAGES[0].npcs![0]
+    store.getState().interact({ kind: 'npc', id: npc.id })
+    store.getState().beginAsking()
+    return { store, npc }
+  }
+  const wrong = (store: ReturnType<typeof live>['store'], npc: ReturnType<typeof live>['npc']) => store.getState().answer((npc.question.correctIndex + 1) % 4)
+  afterEach(() => vi.useRealTimers())
+
+  it('a popup stays while paused, however long the child is away', () => {
+    const { store, npc } = live()
+    wrong(store, npc)
+    store.getState().setPaused(true)
+    vi.advanceTimersByTime(60_000)
+    expect(store.getState().popup?.id).toBe('TRY_AGAIN')
+  })
+
+  it('and gets exactly the time it had left when the game goes on', () => {
+    const { store, npc } = live()
+    wrong(store, npc)
+    const total = POPUPS.TRY_AGAIN.durationMs!
+    vi.advanceTimersByTime(2000)
+    store.getState().setPaused(true)
+    vi.advanceTimersByTime(30_000)
+    store.getState().setPaused(false)
+    vi.advanceTimersByTime(total - 2000 - 1)
+    expect(store.getState().popup?.id).toBe('TRY_AGAIN')
+    vi.advanceTimersByTime(1)
+    expect(store.getState().popup).toBeNull()
+  })
+
+  it('pausing twice in a row, or going on without a pause, changes nothing', () => {
+    const { store, npc } = live()
+    wrong(store, npc)
+    store.getState().setPaused(false)
+    store.getState().setPaused(true)
+    vi.advanceTimersByTime(1000)
+    store.getState().setPaused(true)
+    store.getState().setPaused(false)
+    store.getState().setPaused(false)
+    vi.advanceTimersByTime(POPUPS.TRY_AGAIN.durationMs! - 1)
+    expect(store.getState().popup?.id).toBe('TRY_AGAIN')
+    vi.advanceTimersByTime(1)
+    expect(store.getState().popup).toBeNull()
+  })
+
+  it('many pauses add up: only the time actually played counts', () => {
+    const { store, npc } = live()
+    wrong(store, npc)
+    const total = POPUPS.TRY_AGAIN.durationMs!
+    for (let i = 0; i < 4; i++) {
+      vi.advanceTimersByTime(1000)
+      store.getState().setPaused(true)
+      vi.advanceTimersByTime(10_000)
+      store.getState().setPaused(false)
+    }
+    vi.advanceTimersByTime(total - 4000 - 1)
+    expect(store.getState().popup).not.toBeNull()
+    vi.advanceTimersByTime(1)
+    expect(store.getState().popup).toBeNull()
+  })
+
+  it('a popup that comes up while paused starts counting only when the game goes on', () => {
+    const { store, npc } = live()
+    store.getState().setPaused(true)
+    wrong(store, npc)
+    vi.advanceTimersByTime(60_000)
+    expect(store.getState().popup?.id).toBe('TRY_AGAIN')
+    store.getState().setPaused(false)
+    vi.advanceTimersByTime(POPUPS.TRY_AGAIN.durationMs! - 1)
+    expect(store.getState().popup).not.toBeNull()
+    vi.advanceTimersByTime(1)
+    expect(store.getState().popup).toBeNull()
+  })
+
+  it('a popup that already ran out is not brought back by a pause', () => {
+    const { store, npc } = live()
+    wrong(store, npc)
+    vi.advanceTimersByTime(POPUPS.TRY_AGAIN.durationMs!)
+    expect(store.getState().popup).toBeNull()
+    store.getState().setPaused(true)
+    store.getState().setPaused(false)
+    vi.advanceTimersByTime(60_000)
+    expect(store.getState().popup).toBeNull()
+  })
+
+  it('dispose cancels what is waiting, paused or not, and ends the pause', () => {
+    const { store, npc } = live()
+    wrong(store, npc)
+    store.getState().setPaused(true)
+    store.getState().dispose()
+    store.getState().setPaused(false)
+    vi.advanceTimersByTime(60_000)
+    expect(store.getState().popup?.id).toBe('TRY_AGAIN')
+  })
+})
+
+describe('starting over', () => {
+  it('goes back to class 1 with nothing answered, and saves that', () => {
+    const { store, savedProgress } = setup({ stageIndex: 4, answeredIds: [STAGES[4].npcs![0].id] })
+    expect(store.getState().stageIndex).toBe(4)
+    store.getState().startOver()
+    expect(store.getState()).toMatchObject({ stageIndex: 0, phase: 'exploring' })
+    expect(store.getState().answered.size).toBe(0)
+    expect(savedProgress()).toEqual({ stageIndex: 0, answeredIds: [], version: 2 })
+  })
+
+  it('does nothing to a game that has only just begun', () => {
+    const { store } = setup()
+    const before = store.getState()
+    store.getState().startOver()
+    expect(store.getState()).toMatchObject({ stageIndex: 0, phase: 'exploring' })
+    expect(store.getState().answered).toEqual(before.answered)
   })
 })

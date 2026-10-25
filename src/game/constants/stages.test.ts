@@ -1,8 +1,7 @@
+import { questionText } from '../i18n/translate'
 import { describe, expect, it } from 'vitest'
 import { STAGES, buildStages } from './stages'
 import { WIDTH, HEIGHT, PORTRAIT_WIDTH, PORTRAIT_HEIGHT } from './dimensions'
-
-const stageNames = new Set(STAGES.map((s) => s.name))
 
 describe('STAGES data integrity', () => {
   it('has at least one stage', () => {
@@ -18,7 +17,7 @@ describe('STAGES data integrity', () => {
       ]
       for (const q of questions) {
         expect(q.correctIndex).toBeGreaterThanOrEqual(0)
-        expect(q.correctIndex).toBeLessThan(q.choices.length)
+        expect(q.correctIndex).toBeLessThan(questionText('de', q.id)!.choices.length)
       }
     }
   )
@@ -53,21 +52,6 @@ describe('STAGES data integrity', () => {
       }
     }
   )
-
-  it('every nextStage points at a real stage', () => {
-    for (const stage of STAGES) {
-      if (stage.nextStage !== null && stage.nextStage !== undefined) {
-        expect(stageNames.has(stage.nextStage)).toBe(true)
-      }
-    }
-  })
-
-  it('only the last stage has no nextStage', () => {
-    STAGES.slice(0, -1).forEach((stage) => {
-      expect(stage.nextStage).not.toBeNull()
-    })
-    expect(STAGES[STAGES.length - 1].nextStage).toBeNull()
-  })
 })
 
 describe('buildStages', () => {
@@ -159,7 +143,7 @@ describe('curriculum structure', () => {
     )
     for (const stage of restricted) {
       for (const npc of stage.npcs ?? []) {
-        expect(npc.question.prompt).not.toMatch(/Klasse\s*[3-9]/i)
+        expect(questionText('de', npc.question.id)!.prompt).not.toMatch(/Klasse\s*[3-9]/i)
       }
     }
   })

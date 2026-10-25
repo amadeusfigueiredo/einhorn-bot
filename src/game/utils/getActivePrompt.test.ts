@@ -11,10 +11,8 @@ const stage: StageConfig = {
       id: 'gate1',
       area: { x: 0, y: 0, w: 10, h: 10 },
       question: {
-        id: 'gateQ',
-        prompt: 'Gate question?',
-        choices: ['a', 'b'],
-        correctIndex: 0,
+        id: 'stage1Npc2Q',
+        correctIndex: 1,
       },
     },
   ],
@@ -24,10 +22,8 @@ const stage: StageConfig = {
       x: 100,
       y: 100,
       question: {
-        id: 'npcQ',
-        prompt: 'NPC question?',
-        choices: ['x', 'y', 'z'],
-        correctIndex: 2,
+        id: 'stage1Npc1Q',
+        correctIndex: 1,
       },
     },
   ],
@@ -40,20 +36,29 @@ describe('getActivePrompt', () => {
 
   it('resolves a gate question by id', () => {
     expect(getActivePrompt({ kind: 'gate', id: 'gate1' }, stage)).toEqual({
-      prompt: 'Gate question?',
-      choices: ['a', 'b'],
+      prompt: 'Welche Zahl kommt nach 19?',
+      choices: ['18', '20', '21', '29'],
     })
   })
 
   it('resolves an npc question by id', () => {
     expect(getActivePrompt({ kind: 'npc', id: 'npc1' }, stage)).toEqual({
-      prompt: 'NPC question?',
-      choices: ['x', 'y', 'z'],
+      prompt: 'Wie viel ist 7 + 5?',
+      choices: ['11', '12', '13', '10'],
     })
   })
 
   it('returns null when the id is not found', () => {
     expect(getActivePrompt({ kind: 'npc', id: 'missing' }, stage)).toBeNull()
+  })
+
+  it('reads the text in the asked language', () => {
+    expect(getActivePrompt({ kind: 'npc', id: 'npc1' }, stage, 'en')?.prompt).toBe('What is 7 + 5?')
+  })
+
+  it('returns null when a question has no text', () => {
+    const noText = { ...stage, npcs: [{ ...stage.npcs![0], question: { id: 'unknownQ', correctIndex: 0 } }] }
+    expect(getActivePrompt({ kind: 'npc', id: 'npc1' }, noText)).toBeNull()
   })
 
   it('does not cross-match a gate id against npcs', () => {

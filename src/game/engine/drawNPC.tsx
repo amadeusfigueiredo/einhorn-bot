@@ -1,8 +1,13 @@
 import type { LoaderImageAssets, NPC } from '../types'
+import type { UnicornLook } from '../data/unicornLooks'
+import { drawUnicorn2D } from '../utils/drawUnicorn2D'
+import { lighten, mix } from '../utils/color'
 import { roundRect } from '../utils/roundRect'
 import { coverCrop } from '../utils/coverCrop'
 import { computeNpcAnimation } from '../utils/npcAnimation'
 import { canvasTheme, withAlpha } from '../../styles/canvasTheme'
+import { isTeacher } from '../data/teachers'
+import { TEACHER_LOOK } from '../data/unicornLooks'
 
 export type NpcRenderAnim = {
   t: number
@@ -11,9 +16,40 @@ export type NpcRenderAnim = {
   /** Side of the square every portrait is drawn in (bigger on portrait/mobile canvases). */
   figureSide?: number
   reduceMotion?: boolean
+  /** Who it is: when given the unicorn is drawn in code (as in the 3D view) instead of a picture. */
+  look?: UnicornLook
+  /** Seconds added to the idle motion, so a row of unicorns does not breathe in step. */
+  phase?: number
 }
 
 const DEFAULT_FIGURE_SIDE = 128
+
+/** A graduation cap in a gold disc: marks the stage's teacher (no text). */
+function drawTeacherBadge(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.save()
+  ctx.translate(cx, cy)
+  ctx.beginPath()
+  ctx.arc(0, 0, r, 0, Math.PI * 2)
+  ctx.fillStyle = TEACHER_LOOK.tieColor
+  ctx.fill()
+  ctx.lineWidth = Math.max(2, r * 0.12)
+  ctx.strokeStyle = '#ffffff'
+  ctx.stroke()
+  ctx.fillStyle = TEACHER_LOOK.accessoryColor
+  // board
+  ctx.beginPath()
+  ctx.moveTo(0, -r * 0.55)
+  ctx.lineTo(r * 0.75, -r * 0.2)
+  ctx.lineTo(0, r * 0.15)
+  ctx.lineTo(-r * 0.75, -r * 0.2)
+  ctx.closePath()
+  ctx.fill()
+  // band
+  ctx.fillRect(-r * 0.38, -r * 0.05, r * 0.76, r * 0.45)
+  // tassel
+  ctx.fillRect(r * 0.5, -r * 0.2, r * 0.08, r * 0.55)
+  ctx.restore()
+}
 
 export function drawNPC(
   ctx: CanvasRenderingContext2D,
@@ -47,11 +83,10 @@ export function drawNPC(
 
   const figureSide = anim.figureSide ?? DEFAULT_FIGURE_SIDE
 
-  const drawImageWithBorder = (img: HTMLImageElement) => {
-    // Same box for every unicorn: crop the picture to fit, never stretch it.
+  /** The framed box every unicorn stands in (the same for a picture and for a drawn one): glow, `paint` inside, outline, teacher badge. */
+  const drawFramed = (paint: (w: number, h: number) => void) => {
     const displayW = figureSide
     const displayH = figureSide
-    const crop = coverCrop(img, displayW, displayH)
 
     // Glow ring behind the portrait when selected/hovered
     if (glowAlpha > 0) {
@@ -81,7 +116,7 @@ export function drawNPC(
     ctx.beginPath()
     roundRect(ctx, 0, 0, displayW, displayH, BORDER_RADIUS)
     ctx.clip()
-    ctx.drawImage(img, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, displayW, displayH)
+    paint(displayW, displayH)
     ctx.restore()
 
     ctx.save()
@@ -94,9 +129,35 @@ export function drawNPC(
     ctx.stroke()
     ctx.restore()
 
+    if (isTeacher(npc)) drawTeacherBadge(ctx, displayW - 6, 6, displayW * 0.17)
+
     ctx.restore()
 
     imgDrawn = true
+  }
+
+  const drawImageWithBorder = (img: HTMLImageElement) =>
+    // Same box for every unicorn: crop the picture to fit, never stretch it.
+    drawFramed((w, h) => {
+      const crop = coverCrop(img, w, h)
+      ctx.drawImage(img, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, w, h)
+    })
+
+  // 0) a look: the unicorn drawn in code, the same one as in the 3D view, on a soft backdrop of its own colours.
+  if (anim.look) {
+    const look = anim.look
+    drawFramed((w, h) => {
+      const g = ctx.createLinearGradient(0, 0, 0, h)
+      g.addColorStop(0, lighten(mix(look.mane[0] ?? look.coat, '#ffffff', 0.55), 0.2))
+      g.addColorStop(1, lighten(look.coat, 0.35))
+      ctx.fillStyle = g
+      ctx.fillRect(0, 0, w, h)
+      // a soft floor under its hooves
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.35)'
+      ctx.fillRect(0, h * 0.86, w, h * 0.14)
+      drawUnicorn2D(ctx, look, w * 0.47, h * 0.9, w * 0.78, { t: anim.t, phase: anim.phase, reduceMotion: anim.reduceMotion })
+    })
+    return
   }
 
   // 1) preferred: npc.imageKey -> assets[npc.imageKey]
