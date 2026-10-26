@@ -1,5 +1,6 @@
 import type { PointerEvent } from 'react'
 import type { Keys, MoveTarget } from '../types'
+import { useT } from '../i18n/useT'
 
 type MoveControlsProps = {
   keysRef: React.RefObject<Keys>
@@ -7,13 +8,14 @@ type MoveControlsProps = {
 }
 
 const DIRECTIONS = [
-  { key: 'arrowup', className: 'move-btn-up', label: '▲', aria: 'Hoch' },
-  { key: 'arrowleft', className: 'move-btn-left', label: '◀', aria: 'Links' },
-  { key: 'arrowdown', className: 'move-btn-down', label: '▼', aria: 'Runter' },
-  { key: 'arrowright', className: 'move-btn-right', label: '▶', aria: 'Rechts' },
+  { key: 'arrowup', className: 'move-btn-up', label: '▲', name: 'up' },
+  { key: 'arrowleft', className: 'move-btn-left', label: '◀', name: 'left' },
+  { key: 'arrowdown', className: 'move-btn-down', label: '▼', name: 'down' },
+  { key: 'arrowright', className: 'move-btn-right', label: '▶', name: 'right' },
 ] as const
 
 export function MoveControls({ keysRef, moveTargetRef }: MoveControlsProps) {
+  const { t } = useT()
   const press = (key: string) => (e: PointerEvent<HTMLButtonElement>) => {
     e.preventDefault()
     moveTargetRef.current = null
@@ -25,12 +27,12 @@ export function MoveControls({ keysRef, moveTargetRef }: MoveControlsProps) {
   }
 
   return (
-    <div className="move-controls" aria-label="Bewegungssteuerung">
-      {DIRECTIONS.map(({ key, className, label, aria }) => (
+    <div className="move-controls" aria-label={t('moveControls.label')}>
+      {DIRECTIONS.map(({ key, className, label, name }) => (
         <button
           key={key}
           type="button"
-          aria-label={aria}
+          aria-label={t(`moveControls.${name}`)}
           className={`move-btn ${className}`}
           onPointerDown={press(key)}
           onPointerUp={release(key)}

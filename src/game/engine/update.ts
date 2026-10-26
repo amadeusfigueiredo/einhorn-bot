@@ -12,6 +12,7 @@ export function updateGame(params: UpdateParams) {
     player,
     stage,
     answered,
+    visiting = false,
     onTrigger,
     moveTargetRef,
     motionRef,
@@ -99,7 +100,8 @@ export function updateGame(params: UpdateParams) {
   const cx = player.x + player.w / 2
   const cy = player.y + player.h / 2
   for (const n of npcs) {
-    if (answered.has(n.id)) continue
+    // (In a finished class the unicorns are all answered, and still greet her when she asks.)
+    if (answered.has(n.id) && !visiting) continue
     const r = n.talkRadius ?? 80
     if (dist(cx, cy, n.x, n.y) <= r) {
       // If user pressed E/Enter

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, useCallback, type RefObject } from 'react'
 import type { LoaderAudioAssets, StageConfig } from '../types'
 import { resolveStageAudioKey } from '../utils/audioResolver'
-import { soundSettings, useMuted } from '../audio/soundSettings'
+import { musicLevel, soundSettings, useMuted, useMusicVolume } from '../audio/soundSettings'
+import { isPaused, usePaused } from '../pause/pauseStore'
 
 export default function useAudioManager(opts: {
   audioRef: RefObject<LoaderAudioAssets | null>
@@ -15,15 +16,16 @@ export default function useAudioManager(opts: {
   const currentAudioRef = useRef<HTMLAudioElement | null>(null)
   const [showEnableAudio, setShowEnableAudio] = useState(false)
   const muted = useMuted()
+  const paused = usePaused()
+  const musicVolume = useMusicVolume()
 
   // stable function to try to play audio
-  const tryPlayAudio = useCallback(async (audio?: HTMLAudioElement | null) => {
-    if (!audio) return false
+  const tryPlayAudio = useCallback(async (audio: HTMLAudioElement) => {
     // Muted means silent, not "failed": nothing to report.
-    if (soundSettings.getState().muted) return true
+    if (soundSettings.getState().muted || isPaused()) return true
     try {
       audio.loop = true
-      audio.volume = 0.6
+      audio.volume = musicLevel(soundSettings.getState().musicVolume)
       await audio.play()
       return true
     } catch (err) {
@@ -133,16 +135,21 @@ export default function useAudioManager(opts: {
     }
   }, [stage, assetsLoaded, audioRef, getAudioForStage, tryPlayAudio])
 
-  // The mute toggle silences music immediately and resumes it when switched back.
+  // The mute toggle and a pause silence music immediately and resume it when switched back.
   useEffect(() => {
     const audio = currentAudioRef.current
     if (!audio) return
-    if (muted) {
+    if (muted || paused) {
       audio.pause()
     } else if (audioUnlockedRef.current) {
       void tryPlayAudio(audio)
     }
-  }, [muted, tryPlayAudio])
+  }, [muted, paused, tryPlayAudio])
+
+  // The music slider turns the music that is playing, at once.
+  useEffect(() => {
+    if (currentAudioRef.current) currentAudioRef.current.volume = musicLevel(musicVolume)
+  }, [musicVolume])
 
   useEffect(() => {
     return () => {

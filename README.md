@@ -1,26 +1,26 @@
-# 🦄 Amaras Einhorn Schule
+# 🦄 Amaras Einhorn Schule (2D)
 
-A browser-based unicorn adventure for kids: walk through 12 rainbow-themed
-stages, meet unicorns, and answer their quiz questions (in German) to
-progress. Built with React, TypeScript, and Canvas 2D rendering.
+A browser-based unicorn adventure for kids: walk through 15 rainbow-themed
+stages, meet unicorns, and answer their quiz questions (in German, Portuguese
+or English) to progress. Built with React, TypeScript and Canvas 2D.
+
+This repo is the **2D-only** version of the game. The 3D version (three.js,
+films, real classrooms, special rooms) lives in the
+[`unicorn-school-3d`](../unicorn-school-3d) repo; this repo is made from it
+with everything that needs three.js left out (see `NOTES.md`).
 
 ## Features
 
-- **12 stages**, each with its own background, background music, and a
-  handful of unicorn NPCs that ask a quiz question.
-- **Answer questions to advance**: each stage defines how many correct
-  answers are required before the next stage unlocks.
-- **Multiple ways to play**:
-  - Keyboard: arrow keys or WASD to move, `E`/`Enter` to talk to a nearby
-    unicorn.
-  - Click/tap: click or tap anywhere on the canvas to walk there; tap a
-    unicorn directly to walk over and open its question automatically.
-  - On-screen D-pad: touch-friendly movement controls in the corner of the
-    canvas, for devices without a keyboard.
-- **Mobile & tablet friendly**: the canvas scales to fit the screen and all
-  controls are usable with touch.
-- **Dev stage navigator**: jump directly to any stage while testing,
-  available in the header next to the title.
+- **15 stages**, each with its own background, music and four unicorns that
+  ask a quiz question; **3 languages** (German, Portuguese, English), chosen
+  on the start menu.
+- **Open classes**: any class can be entered at any time; the "What is left?"
+  button lists the classes still to do, and the game ends when all 15 are done.
+- **Ways to play**: arrow keys or WASD and `E`/`Enter`; click or tap to walk
+  there; an on-screen D-pad on phones. `P` or `Escape` pauses.
+- **Stickers, wardrobe, pause menu, parent corner**, number questions typed in
+  a box, and the yard, the library and the corridor drawn in 2D.
+- **Mobile & tablet friendly**; respects `prefers-reduced-motion`.
 
 ## Getting started
 
@@ -43,31 +43,26 @@ Then open the printed local URL in your browser.
 | `pnpm preview`     | Preview the production build locally           |
 | `pnpm test`        | Run the unit test suite once (Vitest)          |
 | `pnpm test:watch`  | Run the unit test suite in watch mode          |
+| `pnpm test:coverage` | Run the tests and report what is not covered |
 | `pnpm lint`        | Run ESLint                                     |
 
 ## Project structure
 
 ```
 src/
-  App.tsx                     top-level layout (title bar + game canvas)
-  components/StageSelector.tsx  dev stage-jump UI, shown next to the title
-  game/
-    GameCanvas.tsx             owns game state, input, and the <canvas>
-    constants/stages.ts        the 12 stages: backgrounds, music, NPCs, questions
-    constants/dimensions.ts    canvas resolution
-    engine/                    per-frame update + draw logic
-    hooks/                     input, audio, asset loading, stage navigation
-    components/                SoundButton, MoveControls (D-pad)
-    utils/                     collision, NPC layout, hit-testing, asset loader
+  App.tsx                      layout: title bar, the game, the start menu
+  game/GameShell.tsx           input, assets, audio and the HTML overlay around the 2D view
+  game/logic, stores, data/    pure game state, questions, dialogue, stage config
+  game/views/                  Canvas2DView (classroom), Canvas2DPlaceView (yard, library, corridor)
+  game/engine, utils/draw*     the 2D drawing
+  game/i18n, ui, stickers, ... text in 3 languages, HUD, popups, stickers, pause, wardrobe
 public/assets/                 stage backgrounds, NPC portraits, music, popups
 ```
 
 ## Testing
 
-Unit tests cover the pure game logic — movement and collision, click-to-move
-arrival, NPC hit-testing, question resolution, and stage data integrity
-(every question's answer index is in range, every stage's `nextStage` points
-at a real stage, etc.):
+Vitest, with Testing Library and jsdom for the React parts. Aim: 100 % coverage
+of what is in this repo (`pnpm test:coverage`).
 
 ```bash
 pnpm test

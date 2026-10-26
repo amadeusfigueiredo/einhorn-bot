@@ -1,6 +1,10 @@
 export type Progress = {
+  /** The class she is in. (An old save said how far she had got: see `solvedFromSave`.) */
   stageIndex: number
+  /** Every question she has answered right, in any class (an old save: only those of the class she had got to). */
   answeredIds: string[]
+  /** 2 for the new kind; missing for a save made before she could enter any class. */
+  version?: number
 }
 
 export const PROGRESS_STORAGE_KEY = 'amaras-einhorn-schule:progress:v1'
@@ -18,7 +22,8 @@ function isValidProgress(value: unknown): value is Progress {
   return (
     typeof candidate.stageIndex === 'number' &&
     Array.isArray(candidate.answeredIds) &&
-    candidate.answeredIds.every((id) => typeof id === 'string')
+    candidate.answeredIds.every((id) => typeof id === 'string') &&
+    (candidate.version === undefined || typeof candidate.version === 'number')
   )
 }
 

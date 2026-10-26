@@ -113,7 +113,7 @@ describe('updateGame gate triggers', () => {
       {
         id: 'gate1',
         area: { x: 100, y: 100, w: 56, h: 56 },
-        question: { id: 'q', prompt: 'p', choices: [], correctIndex: 0 },
+        question: { id: 'q', correctIndex: 0 },
       },
     ],
     npcs: [],
@@ -158,7 +158,7 @@ describe('updateGame npc triggers', () => {
         x: 200,
         y: 200,
         talkRadius: 80,
-        question: { id: 'q', prompt: 'p', choices: [], correctIndex: 0 },
+        question: { id: 'q', correctIndex: 0 },
       },
     ],
   }
@@ -401,5 +401,82 @@ describe('updateGame motionRef (for sprite animation)', () => {
       motionRef,
     })
     expect(motionRef.current.moving).toBe(false)
+  })
+})
+
+describe('updateGame: stages without gates or unicorns, and ones already answered', () => {
+  type Trigger = (kind: 'gate' | 'npc', id: string) => void
+  const onTrigger = () => vi.fn<Trigger>()
+  const step = (stage: StageConfig, keys: Record<string, boolean>, trigger: ReturnType<typeof onTrigger>, answered: string[] = []) =>
+    updateGame({ dt: 0.016, keys, player: makePlayer({ x: 100, y: 100 }), stage, answered: new Set(answered), onTrigger: trigger })
+
+  it('a stage that lists no gates and no unicorns at all is just a room to walk in', () => {
+    const t = onTrigger()
+    const bare = { name: 'stage1', subject: 'Mathematik', difficulty: 'leicht' } as StageConfig
+    expect(() => step(bare, { e: true }, t)).not.toThrow()
+    expect(t).not.toHaveBeenCalled()
+  })
+
+  const withGate: StageConfig = { ...emptyStage, gates: [{ id: 'g', area: { x: 90, y: 90, w: 100, h: 100 }, question: { id: 'q' } as never }] }
+  const withNpc: StageConfig = { ...emptyStage, npcs: [{ id: 'n', x: 128, y: 128, talkRadius: 80 } as never] }
+
+  it('walking into a gate triggers it at once', () => {
+    const t = onTrigger()
+    step(withGate, {}, t)
+    expect(t).toHaveBeenCalledWith('gate', 'g')
+  })
+
+  it('a gate that was answered is just a place now', () => {
+    const t = onTrigger()
+    step(withGate, {}, t, ['g'])
+    expect(t).not.toHaveBeenCalled()
+  })
+
+  it('a unicorn next to Amara starts talking only when E or Enter is pressed', () => {
+    const quiet = onTrigger()
+    step(withNpc, {}, quiet)
+    expect(quiet).not.toHaveBeenCalled()
+    for (const key of ['e', 'enter']) {
+      const t = onTrigger()
+      step(withNpc, { [key]: true }, t)
+      expect(t, key).toHaveBeenCalledWith('npc', 'n')
+    }
+  })
+
+  it('a unicorn that was asked already does not talk again', () => {
+    const t = onTrigger()
+    step(withNpc, { e: true }, t, ['n'])
+    expect(t).not.toHaveBeenCalled()
+  })
+
+  describe('in a class she has finished (every unicorn answered, they greet her)', () => {
+    const visit = (keys: Record<string, boolean>, trigger: ReturnType<typeof onTrigger>, stage = withNpc) =>
+      updateGame({ dt: 0.016, keys, player: makePlayer({ x: 100, y: 100 }), stage, answered: new Set(['n', 'g']), visiting: true, onTrigger: trigger })
+
+    it('a unicorn next to her greets her when E or Enter is pressed, as in any class', () => {
+      for (const key of ['e', 'enter']) {
+        const t = onTrigger()
+        visit({ [key]: true }, t)
+        expect(t, key).toHaveBeenCalledWith('npc', 'n')
+      }
+    })
+
+    it('but nobody starts a talk by itself, and without E nothing happens', () => {
+      const t = onTrigger()
+      visit({}, t)
+      expect(t).not.toHaveBeenCalled()
+    })
+
+    it('a gate that was passed does not catch her again (gates are not greetings)', () => {
+      const t = onTrigger()
+      visit({}, t, withGate)
+      expect(t).not.toHaveBeenCalled()
+    })
+
+    it('without visiting, the same answered unicorn stays quiet (nothing changed for the class she is playing)', () => {
+      const t = onTrigger()
+      updateGame({ dt: 0.016, keys: { e: true }, player: makePlayer({ x: 100, y: 100 }), stage: withNpc, answered: new Set(['n']), onTrigger: t })
+      expect(t).not.toHaveBeenCalled()
+    })
   })
 })

@@ -27,11 +27,15 @@ export type Difficulty = 'leicht' | 'mittel' | 'schwer'
 
 export type Rect = { x: number; y: number; w: number; h: number }
 
+/** A question's text lives in src/locales/<lang>.json under `questions.<id>`. */
 export type Question = {
   id: string
-  prompt: string
-  choices: string[]
   correctIndex: number
+  /**
+   * How it is asked: 'choice' (the default) shows the answers to pick from; 'number' asks for the number to be typed
+   * (only for a question whose answers are all numbers: the right answer is the one at `correctIndex`).
+   */
+  kind?: 'choice' | 'number'
 }
 
 export type Gate = {
@@ -48,6 +52,8 @@ export type NPC = {
   talkRadius?: number // distance to allow talking (default 80)
   question: Question
   imageKey?: string
+  /** 'teacher': asks the stage's hardest question and is dressed as a teacher. */
+  role?: 'teacher'
 }
 
 export type StageConfig = {
@@ -67,7 +73,6 @@ export type StageConfig = {
   | 'stage12Background'
 
   requiredToAdvance?: number // default: all gates + all NPCs
-  nextStage?: SceneName | null
   gates?: Gate[] // optional now
   npcs?: NPC[] // NEW
   subject: Subject
@@ -78,12 +83,7 @@ export type Npc = {
   id: string
   x: number
   y: number
-  question: {
-    id: string
-    prompt: string
-    choices: string[]
-    correctIndex: number
-  }
+  question: Question
 }
 
 export type LoaderImageAssets = {
@@ -99,9 +99,6 @@ export type LoaderImageAssets = {
   stage10Background?: HTMLImageElement
   stage11Background?: HTMLImageElement
   stage12Background?: HTMLImageElement
-  winPopup?: HTMLImageElement
-  tryAgainPopup?: HTMLImageElement
-  gameEndPopup?: HTMLImageElement
   stage1Npc1?: HTMLImageElement
   stage1Npc2?: HTMLImageElement
   stage1Npc3?: HTMLImageElement
@@ -179,6 +176,8 @@ export type UpdateParams = {
   player: Player
   stage: StageConfig
   answered: ReadonlySet<string>
+  /** She is in a finished class: the unicorns there have all been answered, and still greet her when she asks (E, Enter). */
+  visiting?: boolean
   onTrigger: (kind: 'gate' | 'npc', id: string) => void
   /** Click/tap-to-move target. Any manual key input cancels it. */
   moveTargetRef?: { current: MoveTarget | null }

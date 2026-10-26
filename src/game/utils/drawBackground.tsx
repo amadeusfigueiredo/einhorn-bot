@@ -1,4 +1,6 @@
 import type { StageConfig, LoaderImageAssets } from '../types'
+import { CLASSROOMS } from '../data/classrooms'
+import { drawRoomBackground } from './drawRoomBackground'
 
 export function drawBackground(
   ctx: CanvasRenderingContext2D,
@@ -7,8 +9,8 @@ export function drawBackground(
   width: number,
   height: number
 ) {
-  const key = stage.background as keyof LoaderImageAssets
-  const img = assets?.[key] as HTMLImageElement | undefined
+  const key = stage.background as keyof LoaderImageAssets | undefined
+  const img = key ? (assets?.[key] as HTMLImageElement | undefined) : undefined
 
   // helper: cover-style center crop
   const drawCover = (image: HTMLImageElement) => {
@@ -26,15 +28,12 @@ export function drawBackground(
     return
   }
 
-  // 2) fallback: try stage1Background..stage12Background automatically
-  // (useful if stage.background is missing/wrong)
-  for (let s = 1; s <= 12; s++) {
-    const fallbackKey = `stage${s}Background` as keyof LoaderImageAssets
-    const fallbackImg = assets?.[fallbackKey] as HTMLImageElement | undefined
-    if (fallbackImg) {
-      drawCover(fallbackImg)
-      return
-    }
+  // 2) no picture (stages 13 to 15 have none of their own, or it has not loaded yet): the room drawn in code,
+  // from the same description the 3D classroom is built from.
+  const room = CLASSROOMS[stage.name]
+  if (room) {
+    drawRoomBackground(ctx, room, width, height)
+    return
   }
 
   // 3) final fallback: solid color (so canvas isn't blank)

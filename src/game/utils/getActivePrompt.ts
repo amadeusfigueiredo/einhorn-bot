@@ -1,4 +1,6 @@
 import type { StageConfig, Question, NPC, Gate } from '../types'
+import { questionText } from '../i18n/translate'
+import type { Lang } from '../i18n/language'
 
 /**
  * Determines which question and choices to display based on the active question key.
@@ -6,7 +8,8 @@ import type { StageConfig, Question, NPC, Gate } from '../types'
 
 export function getActivePrompt(
   questionKey: { kind: 'gate' | 'npc'; id: string } | null,
-  stage: StageConfig
+  stage: StageConfig,
+  lang: Lang = 'de'
 ): { prompt: string; choices: string[] } | null {
   if (!questionKey) return null
 
@@ -20,8 +23,6 @@ export function getActivePrompt(
     question = n?.question
   }
 
-  if (question) {
-    return { prompt: question.prompt, choices: question.choices }
-  }
-  return null
+  const text = question && questionText(lang, question.id)
+  return text ? { prompt: text.prompt, choices: [...text.choices] } : null
 }

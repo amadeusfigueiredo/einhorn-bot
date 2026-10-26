@@ -1,0 +1,1057 @@
+{
+  "app": {
+    "title": "🦄 Unicorn Dream School ✨",
+    "subtitle": "Learn, play & discover rainbow adventures 💜🩷"
+  },
+  "subjects": {
+    "Mathematik": "Maths",
+    "Deutsch": "English",
+    "Sachunterricht": "Science",
+    "Musik": "Music",
+    "Bildende Kunst": "Art"
+  },
+  "difficulty": {
+    "leicht": "easy",
+    "mittel": "medium",
+    "schwer": "hard"
+  },
+  "dialogue": {
+    "speaker": "Teacher Unicorn",
+    "nextLineHint": "Continue with E, Enter or a tap",
+    "talkChip": "Press E or tap"
+  },
+  "hud": {
+    "talkToMe": "Talk to me!",
+    "menu": "Menu",
+    "menuClose": "Close the menu",
+    "overlayPrefs": "Preferences",
+    "overlayPrefsClose": "Close the preferences",
+    "progress": "Progress: stage {n} of {total}",
+    "stars": "{n} of {total} stars"
+  },
+  "intro": {
+    "skip": "Skip",
+    "label": "Introduction",
+    "watch": "Watch the intro"
+  },
+  "transition": {
+    "dingDong": "Ding-dong!",
+    "label": "Next class"
+  },
+  "mascot": {
+    "label": "Unicorn"
+  },
+  "greetings": {
+    "Mathematik": [
+      "Hello{, name}! I love numbers. Will you help me with a sum?",
+      "How nice that you came{, name}! I have a number question.",
+      "Yay, a visitor{, name}! Do you want to count with me?"
+    ],
+    "Deutsch": [
+      "Hello{, name}! I love words. Will you help me with a question?",
+      "How nice that you came{, name}! I have a word puzzle.",
+      "Yay, a visitor{, name}! Do you want to find letters with me?"
+    ],
+    "Sachunterricht": [
+      "Hello{, name}! I am curious about the world. Do you know more?",
+      "How nice that you came{, name}! I have an explorer question.",
+      "Yay, a visitor{, name}! Do you want to explore nature with me?"
+    ],
+    "Musik": [
+      "Hello{, name}! Can you hear the music? I have a sound question.",
+      "How nice that you came{, name}! Let's discover sounds together.",
+      "Yay, a visitor{, name}! Do you want to solve a music puzzle?"
+    ],
+    "Bildende Kunst": [
+      "Hello{, name}! I love colours. Will you help me with a painting question?",
+      "How nice that you came{, name}! I have a colour puzzle.",
+      "Yay, a visitor{, name}! Do you want to look at pictures with me?"
+    ]
+  },
+  "feedback": {
+    "finishAllTitle": "Class done!",
+    "finishAllText": "But the school is not finished yet: {n} classes are still waiting for you.",
+    "finishAllText1": "But the school is not finished yet: 1 class is still waiting for you.",
+    "showMe": "Show me",
+    "winTitle": "Correct!",
+    "winLines": [
+      "You did really well.",
+      "That's right! Let's keep going.",
+      "Great, you are so clever!",
+      "Brilliant! The unicorns are delighted."
+    ],
+    "winLinesNamed": [
+      "You did really well, {name}.",
+      "That's right, {name}! Let's keep going.",
+      "Great, {name}, you are so clever!",
+      "Brilliant, {name}! The unicorns are delighted."
+    ],
+    "wrongTitle": "Almost!",
+    "wrongHints": [
+      "Read the question again, nice and slowly.",
+      "Have another try.",
+      "Think calmly. You can do it!"
+    ],
+    "wrongHintsNamed": [
+      "Read the question again, nice and slowly, {name}.",
+      "Have another try, {name}.",
+      "Think calmly, {name}. You can do it!"
+    ],
+    "answerIs": "The right answer: {answer}",
+    "again": "Try again",
+    "stageDone": "Stage complete!",
+    "stageDoneSub": "You won a sticker.",
+    "nextClass": "To the next class",
+    "plusStar": "+1 star"
+  },
+  "ending": {
+    "keepPlaying": "Keep playing for 100 %",
+    "more": "You have {n} % of the game. Look for the stickers you are missing!",
+    "title": "You did it!",
+    "titleNamed": "You did it, {name}!",
+    "text": "You have mastered the whole Unicorn Dream School. All the unicorns are celebrating!",
+    "textNamed": "You have mastered the whole Unicorn Dream School, {name}. All the unicorns are celebrating!",
+    "button": "Play again",
+    "album": "Sticker album"
+  },
+  "personal": {
+    "stageWish": [
+      "Good luck, {name}!",
+      "Let's go, {name}!",
+      "You can do it, {name}!",
+      "The unicorns are waiting for you, {name}!"
+    ],
+    "questionKicker": [
+      "{name}, do you know this one?",
+      "You can do it, {name}!",
+      "Think calmly, {name}.",
+      "For you, {name}:"
+    ]
+  },
+  "nameModal": {
+    "title": "Welcome to Unicorn Dream School!",
+    "hint": "The unicorns would like to greet you by name.",
+    "label": "What is your name?",
+    "placeholder": "Your name",
+    "submit": "Let's go!",
+    "skip": "Play without a name",
+    "cancel": "Cancel",
+    "tooShort": "Please write your name."
+  },
+  "nameButton": {
+    "textEmpty": "Name",
+    "labelEmpty": "Enter your name",
+    "labelNamed": "Change name: now {name}"
+  },
+  "loading": {
+    "text": "The unicorns are on their way …"
+  },
+  "stage": {
+    "of": "Stage {n} of {total}",
+    "announce": "Stage {n} of {total}: {subject}"
+  },
+  "progress": {
+    "plain": "{answered} of {required}",
+    "extra": "{answered} of {required} ({total})"
+  },
+  "field": {
+    "label2d": "Playing field. Walk to a unicorn with the arrow keys or W, A, S, D and press E. Or tap a unicorn.",
+    "label3d": "3D playing field. Walk to a unicorn with the arrow keys or W, A, S, D and press E. Or tap a unicorn."
+  },
+  "moveControls": {
+    "label": "Movement controls",
+    "up": "Up",
+    "left": "Left",
+    "down": "Down",
+    "right": "Right"
+  },
+  "sound": {
+    "on": "Sound on",
+    "off": "Sound off",
+    "turnOn": "Turn sound on",
+    "turnOff": "Turn sound off",
+    "music": "Music",
+    "effects": "Sounds",
+    "volume": "Volume",
+    "volumeOpen": "Volume of the music and the sounds",
+    "volumeClose": "Close the volume"
+  },
+  "sports": {
+    "pony": "Pony yard",
+    "pool": "Pool",
+    "dojo": "Dojo",
+    "dance": "Dance hall"
+  },
+  "places": {
+    "yard": "Schoolyard",
+    "hall": "School corridor",
+    "library": "Library",
+    "toClass": "To class",
+    "toYard": "To the yard",
+    "toHall": "To the corridor",
+    "toLibrary": "To the library",
+    "sports": "Sports hall",
+    "toSports": "To the sports hall",
+    "pony": "Pony yard",
+    "toPony": "To the pony yard",
+    "pool": "Pool",
+    "toPool": "To the pool",
+    "dojo": "Dojo",
+    "toDojo": "To the dojo",
+    "dance": "Dance hall",
+    "toDance": "To the dance hall",
+    "tech": "Tech room",
+    "toTech": "To the tech room",
+    "science": "Science room",
+    "toScience": "To the science room",
+    "label": "You are in the {place}",
+    "close": "Close",
+    "talkLabel": "Talking with {who}",
+    "optionsLabel": "Your answer",
+    "next": "Next",
+    "back": "Back",
+    "closeBook": "Close the book",
+    "page": "Page {n} of {total}",
+    "book": "Book: {title}"
+  },
+  "start": {
+    "label": "Start menu",
+    "titleSmall": "Amara's",
+    "friend": "Your friend always walks along!",
+    "go": "Let's go!",
+    "back": "Language",
+    "mainMenu": "Main menu"
+  },
+  "pause": {
+    "title": "Pause",
+    "button": "Pause the game",
+    "resume": "Keep playing",
+    "hint": "P or Esc also pauses",
+    "filmPause": "Pause the film",
+    "filmResume": "Continue the film",
+    "filmPaused": "Paused",
+    "hero": "Who do you play?",
+    "heroAmara": "Amara",
+    "heroUnicorn": "Unicorn"
+  },
+  "view": {
+    "toggle": "Change view: now {current}, to {next}"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "selector": {
+    "title": "✨ Stage",
+    "prev": "Previous stage",
+    "next": "Next stage",
+    "placeholder": "Stage #",
+    "question": "Question",
+    "prevQuestion": "Previous question",
+    "nextQuestion": "Next question",
+    "go": "Go!"
+  },
+  "questions": {
+    "stage1Npc1Q": {
+      "prompt": "What is 7 + 5?",
+      "choices": [
+        "11",
+        "12",
+        "13",
+        "10"
+      ]
+    },
+    "stage1Npc2Q": {
+      "prompt": "Which number comes after 19?",
+      "choices": [
+        "18",
+        "20",
+        "21",
+        "29"
+      ]
+    },
+    "stage1Npc3Q": {
+      "prompt": "What is half of 10?",
+      "choices": [
+        "4",
+        "5",
+        "6",
+        "2"
+      ]
+    },
+    "stage1Npc4Q": {
+      "prompt": "How many corners does a triangle have?",
+      "choices": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "stage2Npc1Q": {
+      "prompt": "What is 14 - 6?",
+      "choices": [
+        "9",
+        "8",
+        "7",
+        "6"
+      ]
+    },
+    "stage2Npc2Q": {
+      "prompt": "Which is the biggest number?",
+      "choices": [
+        "45",
+        "54",
+        "39",
+        "41"
+      ]
+    },
+    "stage2Npc3Q": {
+      "prompt": "What is 6 + 6 + 6?",
+      "choices": [
+        "16",
+        "18",
+        "20",
+        "12"
+      ]
+    },
+    "stage2Npc4Q": {
+      "prompt": "How many sides does a dice have?",
+      "choices": [
+        "4",
+        "6",
+        "8",
+        "5"
+      ]
+    },
+    "stage3Npc1Q": {
+      "prompt": "What is 17 + 26?",
+      "choices": [
+        "43",
+        "42",
+        "53",
+        "33"
+      ]
+    },
+    "stage3Npc2Q": {
+      "prompt": "What is 3 × 4?",
+      "choices": [
+        "7",
+        "12",
+        "10",
+        "9"
+      ]
+    },
+    "stage3Npc3Q": {
+      "prompt": "Anna has 20 sweets. She eats 8 and gives 5 away. How many are left?",
+      "choices": [
+        "7",
+        "8",
+        "12",
+        "5"
+      ]
+    },
+    "stage3Npc4Q": {
+      "prompt": "What is 100 - 45?",
+      "choices": [
+        "55",
+        "65",
+        "45",
+        "50"
+      ]
+    },
+    "stage4Npc1Q": {
+      "prompt": "How many letters are in the word 'cat'?",
+      "choices": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "stage4Npc2Q": {
+      "prompt": "Which word rhymes with 'cake'?",
+      "choices": [
+        "ball",
+        "lake",
+        "tree",
+        "sun"
+      ]
+    },
+    "stage4Npc3Q": {
+      "prompt": "What is the opposite of 'big'?",
+      "choices": [
+        "round",
+        "small",
+        "tall",
+        "fast"
+      ]
+    },
+    "stage4Npc4Q": {
+      "prompt": "How do you write the first word of a sentence?",
+      "choices": [
+        "with a small letter",
+        "with a capital letter",
+        "in italics",
+        "underlined"
+      ]
+    },
+    "stage5Npc1Q": {
+      "prompt": "Which word is a noun (a thing)?",
+      "choices": [
+        "run",
+        "quick",
+        "table",
+        "and"
+      ]
+    },
+    "stage5Npc2Q": {
+      "prompt": "What is the plural of 'mouse'?",
+      "choices": [
+        "mouses",
+        "mice",
+        "mices",
+        "meese"
+      ]
+    },
+    "stage5Npc3Q": {
+      "prompt": "Which word is spelled correctly?",
+      "choices": [
+        "bicycle",
+        "bycicle",
+        "bisicle",
+        "bicycel"
+      ]
+    },
+    "stage5Npc4Q": {
+      "prompt": "What is the opposite of 'fast'?",
+      "choices": [
+        "tall",
+        "slow",
+        "short",
+        "strong"
+      ]
+    },
+    "stage6Npc1Q": {
+      "prompt": "Which word is a verb (a doing word)?",
+      "choices": [
+        "tree",
+        "jump",
+        "blue",
+        "house"
+      ]
+    },
+    "stage6Npc2Q": {
+      "prompt": "How many syllables are in the word 'butterfly'?",
+      "choices": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "stage6Npc3Q": {
+      "prompt": "Which of these words is a name and starts with a capital letter?",
+      "choices": [
+        "run",
+        "Maria",
+        "pretty",
+        "and"
+      ]
+    },
+    "stage6Npc4Q": {
+      "prompt": "What does 'happy' mean?",
+      "choices": [
+        "sad",
+        "glad",
+        "tired",
+        "angry"
+      ]
+    },
+    "stage7Npc1Q": {
+      "prompt": "How many seasons are there in a year?",
+      "choices": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    "stage7Npc2Q": {
+      "prompt": "Which animal lays eggs?",
+      "choices": [
+        "Dog",
+        "Cat",
+        "Hen",
+        "Horse"
+      ]
+    },
+    "stage7Npc3Q": {
+      "prompt": "What do plants need to grow?",
+      "choices": [
+        "water and light",
+        "only darkness",
+        "only sand",
+        "nothing"
+      ]
+    },
+    "stage7Npc4Q": {
+      "prompt": "What colour is the sky on a clear day?",
+      "choices": [
+        "green",
+        "blue",
+        "red",
+        "yellow"
+      ]
+    },
+    "stage8Npc1Q": {
+      "prompt": "How many continents are there on Earth?",
+      "choices": [
+        "5",
+        "6",
+        "7",
+        "8"
+      ]
+    },
+    "stage8Npc2Q": {
+      "prompt": "Which organ pumps blood around the body?",
+      "choices": [
+        "the lungs",
+        "the heart",
+        "the liver",
+        "the stomach"
+      ]
+    },
+    "stage8Npc3Q": {
+      "prompt": "Where does rain come from?",
+      "choices": [
+        "straight from the sea",
+        "from the clouds",
+        "from the sun",
+        "from the rivers"
+      ]
+    },
+    "stage8Npc4Q": {
+      "prompt": "What is the biggest mammal in the world?",
+      "choices": [
+        "Elephant",
+        "Giraffe",
+        "Blue whale",
+        "Rhinoceros"
+      ]
+    },
+    "stage9Npc1Q": {
+      "prompt": "What is it called when water evaporates, forms clouds and falls again as rain?",
+      "choices": [
+        "the water cycle",
+        "the sun cycle",
+        "the wind cycle",
+        "the earth cycle"
+      ]
+    },
+    "stage9Npc2Q": {
+      "prompt": "Which planet is closest to the Sun?",
+      "choices": [
+        "Venus",
+        "Earth",
+        "Mercury",
+        "Mars"
+      ]
+    },
+    "stage9Npc3Q": {
+      "prompt": "What happens in photosynthesis?",
+      "choices": [
+        "Plants use light to make oxygen and sugar",
+        "Plants drink oil",
+        "Plants eat insects",
+        "Plants go to sleep"
+      ]
+    },
+    "stage9Npc4Q": {
+      "prompt": "What is the biggest ocean on Earth?",
+      "choices": [
+        "Atlantic",
+        "Pacific",
+        "Indian",
+        "Arctic"
+      ]
+    },
+    "stage10Npc1Q": {
+      "prompt": "Which instrument has black and white keys?",
+      "choices": [
+        "Guitar",
+        "Piano",
+        "Drum",
+        "Flute"
+      ]
+    },
+    "stage10Npc2Q": {
+      "prompt": "What do you do with a drum?",
+      "choices": [
+        "blow it",
+        "hit it",
+        "pluck it",
+        "rub it"
+      ]
+    },
+    "stage10Npc3Q": {
+      "prompt": "How many strings does a classical guitar usually have?",
+      "choices": [
+        "4",
+        "6",
+        "8",
+        "5"
+      ]
+    },
+    "stage10Npc4Q": {
+      "prompt": "Which instrument do you blow into?",
+      "choices": [
+        "Flute",
+        "Piano",
+        "Drum",
+        "Guitar"
+      ]
+    },
+    "stage11Npc1Q": {
+      "prompt": "What is the sign that shows silence in music called?",
+      "choices": [
+        "Note",
+        "Clef",
+        "Rest",
+        "Bar"
+      ]
+    },
+    "stage11Npc2Q": {
+      "prompt": "What does 'forte' mean in music?",
+      "choices": [
+        "quiet",
+        "fast",
+        "loud",
+        "slow"
+      ]
+    },
+    "stage11Npc3Q": {
+      "prompt": "Which instrument is played with a bow?",
+      "choices": [
+        "Trumpet",
+        "Violin",
+        "Piano",
+        "Drum"
+      ]
+    },
+    "stage11Npc4Q": {
+      "prompt": "How many lines does a music stave have?",
+      "choices": [
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "stage12Npc1Q": {
+      "prompt": "Who composed 'The Magic Flute'?",
+      "choices": [
+        "Beethoven",
+        "Mozart",
+        "Bach",
+        "Haydn"
+      ]
+    },
+    "stage12Npc2Q": {
+      "prompt": "What does 'piano' mean in music?",
+      "choices": [
+        "loud",
+        "fast",
+        "quiet",
+        "slow"
+      ]
+    },
+    "stage12Npc3Q": {
+      "prompt": "What do you call a big group of musicians who play classical music together?",
+      "choices": [
+        "Choir",
+        "Orchestra",
+        "Band",
+        "Duet"
+      ]
+    },
+    "stage12Npc4Q": {
+      "prompt": "Which note lasts the longest?",
+      "choices": [
+        "Eighth note",
+        "Quarter note",
+        "Half note",
+        "Whole note"
+      ]
+    },
+    "stage13Npc1Q": {
+      "prompt": "Which of these colours is a primary colour?",
+      "choices": [
+        "Green",
+        "Blue",
+        "Purple",
+        "Brown"
+      ]
+    },
+    "stage13Npc2Q": {
+      "prompt": "What do you usually paint a picture with?",
+      "choices": [
+        "a spoon",
+        "a paintbrush",
+        "scissors",
+        "a ruler"
+      ]
+    },
+    "stage13Npc3Q": {
+      "prompt": "What shape is a ball?",
+      "choices": [
+        "square",
+        "round",
+        "pointy",
+        "flat"
+      ]
+    },
+    "stage13Npc4Q": {
+      "prompt": "What colour do you get when you mix blue and yellow?",
+      "choices": [
+        "Green",
+        "Purple",
+        "Orange",
+        "Brown"
+      ]
+    },
+    "stage14Npc1Q": {
+      "prompt": "What do you call a painting of a person?",
+      "choices": [
+        "Landscape",
+        "Portrait",
+        "Still life",
+        "Sketch"
+      ]
+    },
+    "stage14Npc2Q": {
+      "prompt": "Which artist painted 'The Starry Night'?",
+      "choices": [
+        "Pablo Picasso",
+        "Vincent van Gogh",
+        "Claude Monet",
+        "Leonardo da Vinci"
+      ]
+    },
+    "stage14Npc3Q": {
+      "prompt": "Which paint do you mix with water?",
+      "choices": [
+        "Oil paint",
+        "Watercolour",
+        "Pencil",
+        "Chalk"
+      ]
+    },
+    "stage14Npc4Q": {
+      "prompt": "Which colours are called 'cool colours'?",
+      "choices": [
+        "Red and orange",
+        "Blue and green",
+        "Yellow and red",
+        "Brown and black"
+      ]
+    },
+    "stage15Npc1Q": {
+      "prompt": "Who painted the 'Mona Lisa'?",
+      "choices": [
+        "Michelangelo",
+        "Leonardo da Vinci",
+        "Raphael",
+        "Vincent van Gogh"
+      ]
+    },
+    "stage15Npc2Q": {
+      "prompt": "What is the art style of Pablo Picasso with broken-up shapes called?",
+      "choices": [
+        "Impressionism",
+        "Cubism",
+        "Realism",
+        "Baroque"
+      ]
+    },
+    "stage15Npc3Q": {
+      "prompt": "What does a 'still life' show?",
+      "choices": [
+        "animals on the move",
+        "objects that are not alive, like fruit",
+        "people dancing",
+        "landscapes at night"
+      ]
+    },
+    "stage15Npc4Q": {
+      "prompt": "What colour do you get when you mix the three primary colours?",
+      "choices": [
+        "White",
+        "Brown",
+        "Green",
+        "Pink"
+      ]
+    }
+  },
+  "album": {
+    "title": "Your sticker album",
+    "close": "Close",
+    "count": "{n} of {total} stickers"
+  },
+  "film": {
+    "skip": "Skip",
+    "bye": "Bye!",
+    "mates": "See you later!",
+    "koala": "Good luck, {name}!",
+    "knock": "Knock, knock!",
+    "hello": "Hello, {name}!",
+    "stageOf": "Stage {n} / {total}",
+    "comeIn": "Come in, come in!",
+    "psst": "Psst! It starts soon!",
+    "ohh": "Ooooh! How pretty!",
+    "subtitle": "A school full of dreams",
+    "dream": "I dream of a magic school …",
+    "morning": "Good morning!",
+    "schoolDay": "Today is a school day!",
+    "mayI": "May I come along?",
+    "meToo": "Me too!",
+    "allTogether": "We are all coming!",
+    "wow": "Wow! My school!",
+    "classes": "Your 5 classes",
+    "adventure": "15 stages full of adventure!",
+    "dingDong": "Ding-Dong!",
+    "done": "You did it!",
+    "all": "All 15 stages!",
+    "hurray": "Hooray for {name}!",
+    "album": "My sticker album",
+    "night": "Good night, {name}!",
+    "tomorrow": "See you tomorrow at Unicorn Dream School",
+    "again": "Play again",
+    "label": "Film"
+  },
+  "dance": {
+    "caption": "Amara does: {move}",
+    "captionUnicorn": "The unicorn does: {move}",
+    "group": "Amara's moves"
+  },
+  "stickers": {
+    "go": "Go there",
+    "finishClass": "Finish class {n}",
+    "percent": "{n} % of the game done",
+    "where": {
+      "yard": "In the schoolyard",
+      "library": "In the library",
+      "pony": "At the pony yard",
+      "pool": "At the pool",
+      "dojo": "At the dojo",
+      "dance": "In the dance hall",
+      "tech": "In the tech room",
+      "science": "In the science room",
+      "class": "In a classroom",
+      "anywhere": "Anywhere"
+    },
+    "button": "Sticker book",
+    "title": "My sticker book",
+    "close": "Back to the game",
+    "count": "{n} of {total} stickers",
+    "school": "School stickers",
+    "play": "Play stickers",
+    "new": "New sticker!",
+    "got": "Got it!"
+  },
+  "activity": {
+    "creation": "Play my creation number {n}",
+    "close": "Close",
+    "record": "Record",
+    "stop": "Stop",
+    "playMine": "My style",
+    "stopLesson": "Stop",
+    "lessons": "Lessons",
+    "listen": "Watch {lesson}",
+    "along": "Do {lesson} along with the glow",
+    "challenge": "Take the challenge: {lesson}",
+    "showWay": "Show me the way",
+    "listening": "Watch closely …",
+    "recording": "Recording … tie your ribbons, then press Stop!"
+  },
+  "music": {
+    "title": "Xylophone",
+    "close": "Close the xylophone",
+    "bar": "Bar {n}: {note}",
+    "hint": "Tap the colours, or press 1 to 8.",
+    "recording": "Recording … play your tune!",
+    "listening": "Listen …",
+    "follow": "Play the glowing colour!",
+    "done": "Bravo! You played the whole song!",
+    "record": "Record",
+    "stop": "Stop",
+    "playTune": "My tune",
+    "stopSong": "Stop the music",
+    "songs": "Songs",
+    "listen": "Listen to {song}",
+    "along": "Play {song} along with the lights"
+  },
+  "hall": {
+    "revisit": [
+      "Hello{, name}! You have already done everything here – lovely to see you!",
+      "Well done! You already know these questions.",
+      "Lovely that you are visiting us!",
+      "Would you like to go to the schoolyard or the library?"
+    ],
+    "doorNew": "New!",
+    "exitDoor": "Schoolyard & library",
+    "welcomeNext": "Welcome to class {n}! New questions are waiting for you here.",
+    "doorSign": "{n} · {name}",
+    "banner": "{subject} · {from}–{to}"
+  },
+  "todo": {
+    "button": "What is left?",
+    "title": "Classes still to do",
+    "many": "{n} classes still to do",
+    "one": "1 class still to do",
+    "none": "All classes are done!",
+    "allDone": "You did every class! Now look for the stickers you are still missing.",
+    "answered": "{n} of {total} questions",
+    "go": "Go",
+    "here": "You are here",
+    "close": "Back to the game"
+  },
+  "parent": {
+    "open": "For grown-ups",
+    "title": "Corner for grown-ups",
+    "gateTitle": "Just for grown-ups",
+    "gateAsk": "Please solve this to come in:",
+    "gateLabel": "Your answer",
+    "gateOpen": "Open",
+    "gateWrong": "That is not it. Here is a new one.",
+    "close": "Back",
+    "player": "Playing: {name}",
+    "noName": "no name yet",
+    "progressTitle": "Progress",
+    "progress": "Classes done: {n} of {total}",
+    "finishedAll": "All {total} classes finished!",
+    "classHead": "Class",
+    "rightHead": "Right answers",
+    "againHead": "Needed another try",
+    "done": "Done",
+    "now": "Playing now",
+    "todo": "Still to do",
+    "timeTitle": "Playing time",
+    "timeTotal": "In all: {time}",
+    "timeToday": "Today: {time}",
+    "timeNone": "nothing yet",
+    "hoursMinutes": "{hours} h {minutes} min",
+    "minutes": "{minutes} min",
+    "stickers": "{n} of {total} stickers",
+    "settingsTitle": "Settings",
+    "tip": "There are no timers and no scores in the game: a wrong answer just means trying again. Everything here stays on this device.",
+    "resetTitle": "Start over",
+    "resetText": "This sends the child back to class 1 and clears the answers and the playing time. The stickers stay.",
+    "resetButton": "Start over",
+    "resetConfirm": "Yes, start over",
+    "resetCancel": "No, keep playing"
+  },
+  "wardrobe": {
+    "open": "Dress up",
+    "title": "Dress-up",
+    "preview": "How you look now",
+    "unicorn": "Your unicorn",
+    "amara": "Amara's sweater",
+    "coat": "Coat",
+    "horn": "Horn",
+    "wear": "Wearing",
+    "trim": "Colour",
+    "reset": "Back to normal",
+    "done": "Done",
+    "coats": {
+      "white": "White",
+      "pink": "Pink",
+      "mint": "Mint",
+      "lilac": "Lilac",
+      "sun": "Sunny",
+      "sky": "Sky"
+    },
+    "horns": {
+      "straight": "Plain",
+      "curly": "Curly",
+      "rainbow": "Rainbow",
+      "curved": "Moon",
+      "star": "Star"
+    },
+    "wears": {
+      "none": "Nothing",
+      "bow": "Bow",
+      "flowers": "Flowers",
+      "crown": "Crown",
+      "glasses": "Glasses",
+      "sunglasses": "Sunglasses",
+      "scarf": "Scarf",
+      "headphones": "Headphones",
+      "pearls": "Pearls",
+      "helmet": "Helmet"
+    },
+    "trims": {
+      "gold": "Gold",
+      "rose": "Rose",
+      "mint": "Mint",
+      "sky": "Sky",
+      "violet": "Violet",
+      "white": "White"
+    },
+    "sweaters": {
+      "rainbow": "Rainbow",
+      "sunset": "Sunset",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "candy": "Candy",
+      "night": "Night"
+    }
+  },
+  "draw": {
+    "title": "Drawing board",
+    "close": "Close the drawing board",
+    "hint": "Draw with your finger or the mouse.",
+    "canvas": "The paper to draw on",
+    "colours": "Colours",
+    "brushes": "Brush",
+    "undo": "Undo",
+    "clear": "Clear",
+    "save": "Save picture",
+    "full": "The paper is full. Clear it to go on drawing.",
+    "fileName": "my-drawing",
+    "colour": {
+      "red": "Red",
+      "orange": "Orange",
+      "yellow": "Yellow",
+      "green": "Green",
+      "blue": "Blue",
+      "violet": "Violet",
+      "pink": "Pink",
+      "brown": "Brown",
+      "black": "Dark",
+      "eraser": "Eraser"
+    },
+    "brush": {
+      "thin": "Thin",
+      "medium": "Medium",
+      "thick": "Thick"
+    }
+  },
+  "numberCard": {
+    "hint": "Type the number",
+    "display": "Your answer",
+    "erase": "Erase",
+    "ok": "OK",
+    "key": "{n}"
+  },
+  "lesson": {
+    "score": "{n} of 150 points",
+    "step": "Question {n} of 5: {p} points",
+    "ladder": "The lesson",
+    "right": "Correct! +{n}",
+    "teacher": "Teacher",
+    "board": "Go to the board",
+    "sit": "Sit down",
+    "stand": "Stand up",
+    "tap": "Tap the board to open the task"
+  }
+}

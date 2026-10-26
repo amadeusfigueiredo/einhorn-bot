@@ -45,9 +45,13 @@ export function buildStages(width: number, height: number): StageConfig[] {
 // Questions live in data/stageSpecs.ts; this file only adds art and layout.
 //
 // Art/asset note: there's only enough background/NPC artwork for 12
-// distinct-looking stages. Stages 13-15 reuse stage 1-3's art (same
-// pictures, new questions) - swap in new images under the same filenames
-// later if more art gets made.
+// distinct-looking stages. Stages 13-15 reuse stage 1-3's portraits (same
+// pictures, new questions) but have no background picture: the 2D view draws
+// their room in code (`utils/drawRoomBackground.ts`). Swap in new images under
+// the same filenames later if more art gets made.
+/** How many stages have a background picture of their own. */
+const ART_STAGES = 12
+
 function artStage(newStageNumber: number): number {
   return ((newStageNumber - 1) % 12) + 1
 }
@@ -66,9 +70,8 @@ function buildStageTemplate(spec: StageSpec): StageTemplate {
 
   return {
     name: `stage${n}` as StageTemplate['name'],
-    background: `stage${art}Background` as StageTemplate['background'],
+    background: n <= ART_STAGES ? (`stage${art}Background` as StageTemplate['background']) : undefined,
     requiredToAdvance: 4,
-    nextStage: n < 15 ? (`stage${n + 1}` as StageTemplate['nextStage']) : null,
     gates: [],
     subject,
     difficulty,

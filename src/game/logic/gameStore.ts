@@ -22,8 +22,20 @@ export type GameActions = {
   /** Finish the greeting and show the question. */
   beginAsking: () => void
   answer: (choiceIndex: number) => void
+  /** The teacher's lesson is over: the class counts as answered (see `LESSON_DONE`). */
+  lessonDone: () => void
   restart: () => void
+  /** After the ending: go on playing, to find the stickers she is missing. */
+  keepPlaying: () => void
+  /** Back to class 1 with nothing answered, from wherever she is (for the grown-ups' corner). */
+  startOver: () => void
   jumpToStage: (stageIndex: number) => void
+  /** The developers' jump into a class with the first `answered` of its questions already answered (see `logic/devJump.ts`). */
+  devJump: (stageIndex: number, answered: number) => void
+  /** Go into a class she has opened, from the corridor (see `ENTER_STAGE`). */
+  enterStage: (stageIndex: number) => void
+  /** Freezes the popup timers while paused and gives each its remaining time back on going on. */
+  setPaused: (paused: boolean) => void
   /** Cancels pending popup timers (tests, hot reload). */
   dispose: () => void
 }
@@ -52,7 +64,14 @@ export function createGameStore(options: GameStoreOptions): GameStore {
     set: (fn, ms) => setTimeout(fn, ms),
     clear: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
   }
-  const pending = new Set<unknown>()
+  /** The popup timers that are running: how to fire, and how long was left when they last started. */
+  type Pending = { fire: () => void; left: number; startedAt: number; handle: unknown }
+  const pending = new Set<Pending>()
+  let paused = false
+  const arm = (timer: Pending) => {
+    timer.startedAt = Date.now()
+    timer.handle = timers.set(timer.fire, timer.left)
+  }
 
   return createStore<GameStoreState>((set, get) => ({
     ...createInitialState(stages, saved),
@@ -67,17 +86,23 @@ export function createGameStore(options: GameStoreOptions): GameStore {
         const duration = popupDuration(next.popup)
         if (duration !== null) {
           const { token } = next.popup
-          const handle: unknown = timers.set(() => {
-            pending.delete(handle)
-            get().dispatch({ type: 'POPUP_EXPIRED', token })
-          }, duration)
-          pending.add(handle)
+          const timer: Pending = {
+            fire: () => {
+              pending.delete(timer)
+              get().dispatch({ type: 'POPUP_EXPIRED', token })
+            },
+            left: duration,
+            startedAt: 0,
+            handle: undefined,
+          }
+          pending.add(timer)
+          if (!paused) arm(timer)
         }
       }
 
       if (
         next.stageIndex !== prev.stageIndex ||
-        next.answered !== prev.answered
+        next.solved !== prev.solved
       ) {
         saveProgress(storage, toProgress(next))
       }
@@ -86,12 +111,32 @@ export function createGameStore(options: GameStoreOptions): GameStore {
     interact: (key) => get().dispatch({ type: 'TALK', key }),
     beginAsking: () => get().dispatch({ type: 'BEGIN_ASKING' }),
     answer: (choiceIndex) => get().dispatch({ type: 'ANSWER', choiceIndex }),
+    lessonDone: () => get().dispatch({ type: 'LESSON_DONE' }),
     restart: () => get().dispatch({ type: 'RESTART' }),
+    keepPlaying: () => get().dispatch({ type: 'KEEP_PLAYING' }),
+    startOver: () => get().dispatch({ type: 'START_OVER' }),
     jumpToStage: (stageIndex) =>
       get().dispatch({ type: 'JUMP_TO_STAGE', stageIndex }),
+    devJump: (stageIndex, answered) =>
+      get().dispatch({ type: 'DEV_JUMP', stageIndex, answered }),
+    enterStage: (stageIndex) =>
+      get().dispatch({ type: 'ENTER_STAGE', stageIndex }),
+    setPaused: (next) => {
+      if (next === paused) return
+      paused = next
+      pending.forEach((timer) => {
+        if (next) {
+          timers.clear(timer.handle)
+          timer.left = Math.max(0, timer.left - (Date.now() - timer.startedAt))
+        } else {
+          arm(timer)
+        }
+      })
+    },
     dispose: () => {
-      pending.forEach((handle) => timers.clear(handle))
+      pending.forEach((timer) => timers.clear(timer.handle))
       pending.clear()
+      paused = false
     },
   }))
 }

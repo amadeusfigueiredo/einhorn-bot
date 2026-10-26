@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'unicorn-school-redesign']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -19,5 +19,10 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+  },
+  {
+    // Test helpers may export plain objects next to components.
+    files: ['src/test/**', '**/*.test.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
   },
 ])

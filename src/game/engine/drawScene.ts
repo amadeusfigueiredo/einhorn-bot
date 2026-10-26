@@ -5,8 +5,9 @@ import type {
   PlayerMotion,
 } from '../types'
 import { drawGates } from '../renderer'
+import { lookForNpc, playerLookFor } from '../data/stageLooks'
+import type { Outfit } from '../player/outfit'
 import { drawNPC } from '../engine/drawNPC'
-import { drawHUD } from '../utils/drawHUD'
 import { drawBackground } from '../utils/drawBackground'
 import { drawPlayer } from '../utils/drawPlayer'
 import { HEIGHT, WIDTH } from '../constants/dimensions'
@@ -15,6 +16,8 @@ import { getFigureSize } from '../utils/npcDisplaySize'
 import { drawParticles, type Particle } from './particles'
 import { canvasTheme, withAlpha } from '../../styles/canvasTheme'
 import { uiScale } from '../utils/uiScale'
+import { translate, type MessageId, type Vars } from '../i18n/translate'
+import type { Lang } from '../i18n/language'
 
 export type DrawSceneOptions = {
   /** Elapsed seconds, drives idle/walk/hover/selected animations. */
@@ -28,6 +31,9 @@ export type DrawSceneOptions = {
   playerDisplay?: { x: number; y: number }
   particles?: readonly Particle[]
   reduceMotion?: boolean
+  lang?: Lang
+  /** What the child chose to dress her unicorn in (coat, horn, accessory). */
+  outfit?: Outfit
 }
 
 export function drawScene(
@@ -62,15 +68,18 @@ export function drawScene(
 
   const figureSide = getFigureSize(width, height).w
 
-  for (const n of stage.npcs ?? []) {
+  const stageIndex = Number(/^stage(\d+)$/.exec(stage.name ?? '')?.[1] ?? 0) - 1
+  ;(stage.npcs ?? []).forEach((n, i) => {
     drawNPC(ctx, n.x, n.y, answered.has(n.id), assets, n, {
       t: options.t,
       isSelected: nearNpc?.id === n.id,
       isHovered: options.hoveredNpcId === n.id,
       figureSide,
       reduceMotion: options.reduceMotion,
+      look: stageIndex >= 0 ? lookForNpc(stageIndex, i, n) : undefined,
+      phase: i * 1.7,
     })
-  }
+  })
 
   drawPlayer(
     ctx,
@@ -81,23 +90,21 @@ export function drawScene(
       moving: options.motion?.moving ?? false,
       facingLeft: options.motion?.facingLeft ?? false,
       reduceMotion: options.reduceMotion,
+      look: stageIndex >= 0 ? playerLookFor(stageIndex, options.outfit) : undefined,
     }
   )
 
   drawParticles(ctx, options.particles ?? [])
 
-  const total = (stage.gates ?? []).length + (stage.npcs ?? []).length
-  const req = stage.requiredToAdvance ?? total
-  const hudLabel = `${stage.subject} · ${stage.difficulty}`
+  // (The stage's name and stars are not drawn in the picture: they are in the page's top bar, `ui/Hud.tsx`.)
+  const lang = options.lang ?? 'de'
+  const t = (id: MessageId, vars?: Vars) => translate(lang, id, vars)
   const ui = uiScale(width, height)
-  drawHUD(ctx, hudLabel, answered.size, req, total, ui)
 
   if (nearNpc) {
-    drawTalkPrompt(ctx, nearNpc.x, nearNpc.y - 64 * ui, ui, width)
+    drawTalkPrompt(ctx, nearNpc.x, nearNpc.y - 64 * ui, ui, width, t('dialogue.talkChip'))
   }
 }
-
-const PROMPT_TEXT = 'E drücken oder tippen'
 
 /** The little "talk to me" chip above a unicorn you're standing next to. */
 function drawTalkPrompt(
@@ -105,7 +112,8 @@ function drawTalkPrompt(
   cx: number,
   cy: number,
   ui: number,
-  canvasWidth: number
+  canvasWidth: number,
+  text: string
 ) {
   const theme = canvasTheme()
   ctx.save()
@@ -113,7 +121,7 @@ function drawTalkPrompt(
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
 
-  const boxW = ctx.measureText(PROMPT_TEXT).width + 40 * ui
+  const boxW = ctx.measureText(text).width + 40 * ui
   const boxH = 48 * ui
   // Keep the chip fully on screen when the unicorn is near an edge.
   const margin = 8
@@ -130,6 +138,6 @@ function drawTalkPrompt(
   ctx.stroke()
 
   ctx.fillStyle = theme.moon50
-  ctx.fillText(PROMPT_TEXT, cx, cy + 1)
+  ctx.fillText(text, cx, cy + 1)
   ctx.restore()
 }
